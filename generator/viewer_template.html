@@ -1,0 +1,405 @@
+<title>St. Andrew's Minifig Build</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;800&family=Instrument+Sans:wght@400;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: an instruction booklet spread. Big model stage on the left with the step number set large,
+   the "parts for this step" callout and the reference tabs in a column on the right. */
+:root{
+  --bg:#eceff3; --panel:#f9fafb; --stage:#dfe4ea; --ink:#1c232b; --muted:#5b6571; --line:#d1d7df;
+  --accent:#2d5b9b; --brick:#b08d57; --hl:#e0a21f; --hl-ink:#1c232b;
+  --display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --body:"Instrument Sans",system-ui,-apple-system,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#13171c;--panel:#1a1f26;--stage:#20262e;--ink:#e5e8ed;--muted:#9aa3ae;--line:#2c333c;--accent:#8fb2e8;--brick:#d2b483;--hl:#f2c14e;--hl-ink:#13171c;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#13171c;--panel:#1a1f26;--stage:#20262e;--ink:#e5e8ed;--muted:#9aa3ae;--line:#2c333c;--accent:#8fb2e8;--brick:#d2b483;--hl:#f2c14e;--hl-ink:#13171c;color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 var(--body)}
+.wrap{max-width:1360px;margin:0 auto;padding-inline:16px;padding-block:18px 40px;display:grid;gap:14px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 20px}
+h1{font:800 clamp(28px,4.4vw,44px)/1 var(--display);letter-spacing:.01em;margin:0;text-transform:uppercase;text-wrap:balance}
+.meta{display:flex;flex-wrap:wrap;gap:4px 16px;font:12px var(--mono);color:var(--muted);font-variant-numeric:tabular-nums}
+.meta b{color:var(--ink);font-weight:600}
+.spread{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:14px;align-items:start}
+@media (max-width:980px){.spread{grid-template-columns:minmax(0,1fr)}}
+.stage{position:relative;height:min(76vh,780px);min-height:380px;background:var(--stage);border-radius:4px;overflow:hidden}
+#c{width:100%;height:100%;display:block;touch-action:none}
+.stepno{position:absolute;left:16px;top:10px;pointer-events:none;display:grid;gap:2px;max-width:calc(100% - 32px)}
+.stepno .n{font:800 clamp(52px,8vw,92px)/.9 var(--display);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.stepno .n small{font-size:.32em;font-weight:600;color:var(--muted);margin-left:4px}
+.stepno .t{font:600 15px var(--body);text-wrap:balance;max-width:34ch}
+.stepno .sec{font:600 11px var(--mono);letter-spacing:.09em;text-transform:uppercase;color:var(--accent)}
+.toolbar{position:absolute;right:10px;top:10px;display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.seg{display:flex;background:var(--panel);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.seg button{font:600 11px var(--mono);letter-spacing:.05em;text-transform:uppercase;background:none;color:var(--ink);border:0;padding:7px 9px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--panel)}
+.cut{display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:5px 9px;font:11px var(--mono);color:var(--muted)}
+.cut input{width:110px;accent-color:var(--accent)}
+.nav{position:absolute;left:10px;right:10px;bottom:10px;display:flex;gap:8px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:6px}
+.nav button{font:600 13px var(--body);background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:3px;padding:7px 12px;cursor:pointer;white-space:nowrap}
+.nav button.primary{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.nav input{flex:1;min-width:60px;accent-color:var(--hl)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--hl);outline-offset:2px}
+.panel{display:grid;gap:14px;min-width:0}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:14px;min-width:0}
+.callout{border:2px solid var(--hl)}
+h2{font:600 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:0 0 10px;display:flex;justify-content:space-between;gap:8px}
+h2 span{color:var(--ink)}
+.plist{list-style:none;margin:0;padding:0;display:grid;gap:6px;max-height:300px;overflow:auto}
+.plist li{display:grid;grid-template-columns:18px 34px minmax(0,1fr) auto;gap:8px;align-items:center;font-size:13.5px}
+.sw{width:18px;height:18px;border-radius:3px;border:1px solid rgba(0,0,0,.25)}
+.sw.tr{background-image:linear-gradient(135deg,rgba(255,255,255,.55) 0 30%,transparent 30%)}
+.q{font:600 14px var(--mono);font-variant-numeric:tabular-nums;text-align:right}
+.nm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nm small{display:block;color:var(--muted);font-size:11.5px}
+.pn{font:11px var(--mono);color:var(--muted)}
+.note{font-size:12.5px;color:var(--muted);margin:10px 0 0}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);margin:-4px -4px 12px}
+.tabs button{font:600 12px var(--mono);letter-spacing:.06em;text-transform:uppercase;background:none;border:0;color:var(--muted);padding:8px 10px;cursor:pointer;border-bottom:2px solid transparent}
+.tabs button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.scroll{max-height:440px;overflow:auto}
+.sec-h{font:700 17px var(--display);letter-spacing:.03em;text-transform:uppercase;margin:12px 0 4px}
+.sec-h:first-child{margin-top:0}
+.steplink{display:grid;grid-template-columns:34px 1fr auto;gap:8px;width:100%;text-align:left;background:none;border:0;border-radius:3px;padding:4px 6px;color:var(--ink);font:13.5px var(--body);cursor:pointer}
+.steplink:hover{background:var(--bg)}
+.steplink[aria-current="step"]{background:var(--hl);color:var(--hl-ink)}
+.steplink .k{font:600 12px var(--mono);font-variant-numeric:tabular-nums}
+.steplink .c{font:11px var(--mono);color:inherit;opacity:.7;font-variant-numeric:tabular-nums}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font:600 10.5px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:4px 6px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel)}
+td{padding:4px 6px;border-bottom:1px solid var(--line);vertical-align:middle}
+td.n{font:600 13px var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+td.p{font:11.5px var(--mono);color:var(--muted)}
+.notes{display:grid;gap:10px;font-size:13.5px}
+.notes h3{font:700 16px var(--display);letter-spacing:.03em;text-transform:uppercase;margin:4px 0 0}
+.notes p,.notes ul{margin:0}
+.notes ul{padding-left:18px;display:grid;gap:4px}
+.dims{display:grid;grid-template-columns:1fr auto;gap:2px 10px;font-size:13px}
+.dims span:nth-child(even){font:600 12.5px var(--mono);text-align:right;font-variant-numeric:tabular-nums}
+@media (max-width:640px){.toolbar{top:auto;bottom:62px;left:10px;flex-direction:row;flex-wrap:wrap;justify-content:flex-end}.stepno .t{max-width:none}}
+.loading{position:absolute;inset:0;display:grid;place-items:center;font:600 13px var(--mono);color:var(--muted)}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>St. Andrew's Episcopal &middot; Nave</h1>
+    <div class="meta" id="meta"></div>
+  </header>
+
+  <div class="spread">
+    <div class="stage">
+      <canvas id="c" aria-label="3D view of the LEGO model at the current build step"></canvas>
+      <div class="loading" id="loading">Laying bricks…</div>
+      <div class="stepno" aria-live="polite">
+        <div class="sec" id="secname"></div>
+        <div class="n" id="stepn"></div>
+        <div class="t" id="steptitle"></div>
+      </div>
+      <div class="toolbar">
+        <div class="seg" role="group" aria-label="Roof">
+          <button data-roof="on" aria-pressed="false">Roof on</button>
+          <button data-roof="lift" aria-pressed="true">Lift middle</button>
+          <button data-roof="off" aria-pressed="false">Roof off</button>
+        </div>
+        <label class="cut" for="cut">Cut at <input id="cut" type="range" min="2" max="120" value="120"><span id="cutv">—</span></label>
+        <div class="seg" role="group" aria-label="View">
+          <button data-view="front">Front</button><button data-view="side">Side</button><button data-view="above">Above</button><button data-view="inside">Inside</button>
+        </div>
+      </div>
+      <div class="nav">
+        <button id="first">Step 1</button>
+        <button id="prev" aria-label="Previous step">&larr; Back</button>
+        <input id="slider" type="range" min="0" max="0" value="0" aria-label="Build step">
+        <button id="next" class="primary" aria-label="Next step">Next &rarr;</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <section class="box callout">
+        <h2>Parts for this step <span id="pcount"></span></h2>
+        <ul class="plist" id="plist"></ul>
+        <p class="note" id="pnote"></p>
+      </section>
+      <section class="box">
+        <div class="tabs" role="tablist">
+          <button role="tab" id="t-steps" aria-selected="true" aria-controls="p-steps">Steps</button>
+          <button role="tab" id="t-bom" aria-selected="false" aria-controls="p-bom">Parts list</button>
+          <button role="tab" id="t-notes" aria-selected="false" aria-controls="p-notes">Design notes</button>
+        </div>
+        <div id="p-steps" role="tabpanel" class="scroll"></div>
+        <div id="p-bom" role="tabpanel" class="scroll" hidden></div>
+        <div id="p-notes" role="tabpanel" class="scroll" hidden>
+          <div class="notes">
+            <h3>Scale</h3>
+            <div class="dims">
+              <span>Minifig scale, 1 stud</span><span>≈ 0.34 m</span>
+              <span>Nave footprint</span><span>60 × 88 studs</span>
+              <span>Base (six 32 × 32 baseplates)</span><span>64 × 96 studs · 51 × 77 cm</span>
+              <span>Brick wall / glass band top</span><span>8 / 10 bricks</span>
+              <span>Roof break</span><span>41 plates ≈ 5.5 m</span>
+              <span>Ridge</span><span>110 plates ≈ 14.8 m</span>
+              <span>Steep roof pitch (stacked 45° slopes)</span><span>50°</span>
+              <span>Aisle roof pitch (stacked 18° slopes)</span><span>22°</span>
+              <span>Rib spacing</span><span>12 studs ≈ 4.0 m</span>
+            </div>
+            <h3>How it goes together</h3>
+            <ul>
+              <li>Walls are two bricks thick: tan brick outside, white plaster inside, with a clear clerestory band on top.</li>
+              <li>The steep roof is a stair of dark grey 45° slopes backed by medium nougat inverted slopes, so the underside reads as the wood ceiling.</li>
+              <li>The roof splits into seven modules at the ribs. The five middle ones are identical and lift straight off the knee walls to show the interior.</li>
+              <li>Ribs are reddish brown slope stairs standing on the arcade posts, one stud thick, with a small gap below the ceiling so the roof lifts freely.</li>
+              <li>The aisles have a flat medium nougat ceiling at the top of the glass band; the low aisle roofs are fixed.</li>
+            </ul>
+            <h3>Still to decide or check</h3>
+            <ul>
+              <li>Width, length and roof-break height come from the photo massing model and are the measurements most worth taking.</li>
+              <li>Rear gable outside is plain white because the photos didn't show it.</li>
+              <li>The one-stud ribs may flex sideways; a hidden Technic brace or a second stud of thickness would stiffen them.</li>
+              <li>Some colour and part combinations (medium nougat inverted slopes, sand blue bricks in bulk, trans-coloured 1 × 2s) need checking for availability.</li>
+              <li>Not modelled yet: pendant lamps, the small crosses over the narthex doorway, the brocade falls, organ pipes behind the grilles.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script id="data" type="application/json">__DATA__</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(function(){
+const D = JSON.parse(document.getElementById('data').textContent);
+const $ = id => document.getElementById(id);
+const PL = 0.4;                       // plate height in stud units
+const NS = D.steps.length;
+const colHex = D.colors.map(c => c[2]), colTrans = D.colors.map(c => !!c[3]);
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+// ---------------------------------------------------------------- scene
+const canvas = $('c');
+const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:true, preserveDrawingBuffer:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.localClippingEnabled = true;
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(35, 1, 0.5, 2000);
+const controls = new THREE.OrbitControls(camera, canvas);
+controls.enableDamping = true; controls.maxPolarAngle = Math.PI/2 - 0.02;
+scene.add(new THREE.HemisphereLight(0xffffff, 0x8a8f98, 0.72));
+const sun = new THREE.DirectionalLight(0xffffff, 0.62); sun.position.set(-60, 120, 90); scene.add(sun);
+const fill = new THREE.DirectionalLight(0xffffff, 0.22); fill.position.set(80, 40, -60); scene.add(fill);
+const clip = new THREE.Plane(new THREE.Vector3(0, -1, 0), 1e4);
+const matO = new THREE.MeshLambertMaterial({vertexColors:true, side:THREE.DoubleSide, clippingPlanes:[clip]});
+const matT = new THREE.MeshLambertMaterial({vertexColors:true, side:THREE.DoubleSide, transparent:true, opacity:.55, depthWrite:false, clippingPlanes:[clip]});
+const matE = new THREE.LineBasicMaterial({color:0x10151b, transparent:true, opacity:.22, clippingPlanes:[clip]});
+const matH = new THREE.LineBasicMaterial({color:0xe0a21f, clippingPlanes:[clip]});
+const studMat = new THREE.MeshLambertMaterial({clippingPlanes:[clip]});
+
+// ---------------------------------------------------------------- geometry from primitives
+function profile(type, Dp, H){
+  const l = Math.min(0.2, H*0.17);
+  if (type === 1 || type === 2) return [[0,0],[Dp,0],[Dp,l],[1,H],[0,H]];
+  if (type === 3) return [[0,0],[1,0],[Dp,H-l],[Dp,H],[0,H]];
+  if (type === 4) return [[0,0],[Dp,0],[Dp,l],[Dp/2,H],[0,l]];
+  return null;
+}
+function addPrim(G, pr, color){
+  const [pi, type, x0, h0, z0, sx, hp, sz, face] = pr;
+  let y0 = h0*PL, H = hp*PL;
+  if (hp === 0){ y0 = -0.5*PL; H = 0.5*PL; }
+  const pos = G.pos, nor = G.nor, col = G.col, edg = G.edg;
+  let mapf, poly, W;
+  if (type === 0){
+    poly = [[0,0],[sx,0],[sx,H],[0,H]]; W = sz;
+    mapf = (u,v,w) => [x0+u, y0+v, z0+w];
+  } else {
+    const alongX = face < 2, Dp = alongX ? sx : sz; W = alongX ? sz : sx;
+    poly = profile(type, Dp, H);
+    if (face === 0) mapf = (u,v,w) => [x0+u, y0+v, z0+w];
+    else if (face === 1) mapf = (u,v,w) => [x0+Dp-u, y0+v, z0+w];
+    else if (face === 2) mapf = (u,v,w) => [x0+w, y0+v, z0+u];
+    else mapf = (u,v,w) => [x0+w, y0+v, z0+Dp-u];
+  }
+  const n = poly.length;
+  const A = poly.map(p => mapf(p[0], p[1], 0)), B = poly.map(p => mapf(p[0], p[1], W));
+  const cx = (x0 + x0 + sx)/2, cy = y0 + H/2, cz = (z0 + z0 + sz)/2;
+  const tri = (a, b, c) => {
+    const ux=b[0]-a[0], uy=b[1]-a[1], uz=b[2]-a[2], vx=c[0]-a[0], vy=c[1]-a[1], vz=c[2]-a[2];
+    let nx=uy*vz-uz*vy, ny=uz*vx-ux*vz, nz=ux*vy-uy*vx; const L=Math.hypot(nx,ny,nz)||1; nx/=L; ny/=L; nz/=L;
+    const mx=(a[0]+b[0]+c[0])/3-cx, my=(a[1]+b[1]+c[1])/3-cy, mz=(a[2]+b[2]+c[2])/3-cz;
+    if (nx*mx+ny*my+nz*mz < 0){ nx=-nx; ny=-ny; nz=-nz; }
+    for (const p of [a,b,c]){ pos.push(p[0],p[1],p[2]); nor.push(nx,ny,nz); col.push(color.r,color.g,color.b); }
+  };
+  for (let i = 1; i < n-1; i++){ tri(A[0], A[i], A[i+1]); tri(B[0], B[i], B[i+1]); }
+  for (let i = 0; i < n; i++){ const j = (i+1)%n; tri(A[i], A[j], B[j]); tri(A[i], B[j], B[i]);
+    edg.push(...A[i], ...A[j], ...B[i], ...B[j], ...A[i], ...B[i]); }
+}
+// group parts by (step, module) so steps can be shown and modules lifted
+const groups = new Map();
+const tmpC = new THREE.Color();
+const stepBox = Array.from({length:NS}, () => new THREE.Box3());
+for (const pr of D.prims){
+  const p = D.parts[pr[0]], s = p[2], mod = p[3], key = s*16 + (mod+1);
+  if (!groups.has(key)) groups.set(key, {s, mod, o:{pos:[],nor:[],col:[],edg:[]}, t:{pos:[],nor:[],col:[],edg:[]}});
+  const g = groups.get(key), tr = colTrans[p[1]];
+  tmpC.setStyle(colHex[p[1]]);
+  addPrim(tr ? g.t : g.o, pr, tmpC);
+  if (pr[6] > 0) stepBox[s].expandByPoint(new THREE.Vector3(pr[2], pr[3]*PL, pr[4])).expandByPoint(new THREE.Vector3(pr[2]+pr[5], (pr[3]+pr[6])*PL, pr[4]+pr[7]));
+}
+const G = [];
+for (const g of groups.values()){
+  const root = new THREE.Group(); g.root = root; g.edges = [];
+  for (const [k, mat] of [['o', matO], ['t', matT]]){
+    const a = g[k]; if (!a.pos.length) continue;
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(a.pos, 3));
+    geo.setAttribute('normal', new THREE.Float32BufferAttribute(a.nor, 3));
+    geo.setAttribute('color', new THREE.Float32BufferAttribute(a.col, 3));
+    const mesh = new THREE.Mesh(geo, mat); if (k === 't') mesh.renderOrder = 2; root.add(mesh);
+    const eg = new THREE.BufferGeometry(); eg.setAttribute('position', new THREE.Float32BufferAttribute(a.edg, 3));
+    const lines = new THREE.LineSegments(eg, matE); root.add(lines); g.edges.push(lines);
+  }
+  delete g.o; delete g.t;
+  scene.add(root); G.push(g);
+}
+// studs: one instanced mesh, shown from their own step until something covers them
+const studGeo = new THREE.CylinderGeometry(0.3, 0.3, 0.17*1.0, 12); studGeo.translate(0, 0.085, 0);
+const studs = new THREE.InstancedMesh(studGeo, studMat, D.studs.length);
+studs.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+D.studs.forEach((s, i) => { tmpC.setStyle(colHex[D.parts[s[0]][1]]); studs.setColorAt(i, tmpC); });
+scene.add(studs);
+// baseplate stud grid hint
+const grid = new THREE.GridHelper(96, 96, 0x000000, 0x000000); grid.material.transparent = true; grid.material.opacity = .06;
+grid.scale.set(64/96, 1, 1); grid.position.set(0, 0.01, 3); scene.add(grid);
+
+// ---------------------------------------------------------------- state
+let cur = NS - 1, roof = 'lift', cutH = 999;
+const LIFT = 16;
+function modY(mod){ return (roof === 'lift' && mod >= 1 && mod <= 5) ? LIFT : 0; }
+function modVisible(mod){ return !(roof === 'off' && mod >= 0); }
+const M4 = new THREE.Matrix4();
+function apply(){
+  for (const g of G){
+    g.root.visible = g.s <= cur && modVisible(g.mod);
+    g.root.position.y = modY(g.mod);
+    for (const e of g.edges) e.material = (g.s === cur) ? matH : matE;
+  }
+  D.studs.forEach((s, i) => {
+    const p = D.parts[s[0]], vis = p[2] <= cur && s[4] > cur && modVisible(p[3]);
+    if (vis) M4.makeTranslation(s[1]/2, s[2]*PL + modY(p[3]), s[3]/2); else M4.makeScale(0, 0, 0);
+    studs.setMatrixAt(i, M4);
+  });
+  studs.instanceMatrix.needsUpdate = true;
+  clip.constant = cutH >= 120 ? 1e4 : cutH*PL;
+  const st = D.steps[cur];
+  $('stepn').innerHTML = (cur+1) + '<small>/ ' + NS + '</small>';
+  $('steptitle').textContent = st[0];
+  $('secname').textContent = D.sections[st[1]];
+  $('slider').value = cur;
+  matH.color.set(css('--hl') || '#e0a21f');
+  renderParts(); markStep();
+}
+
+// ---------------------------------------------------------------- parts callout
+const cat = D.cat, colName = D.colors.map(c => c[1]);
+const stepParts = Array.from({length:NS}, () => new Map());
+D.parts.forEach(p => { const m = stepParts[p[2]], k = p[0] + ':' + p[1]; m.set(k, (m.get(k)||0) + 1); });
+function swatch(ci){ return '<span class="sw' + (colTrans[ci] ? ' tr' : '') + '" style="background-color:' + colHex[ci] + '"></span>'; }
+function renderParts(){
+  const st = D.steps[cur], mult = st[2];
+  const rows = [...stepParts[cur].entries()].map(([k, n]) => { const [pi, ci] = k.split(':').map(Number); return {pi, ci, n:n/mult}; })
+    .sort((a, b) => b.n - a.n || a.pi - b.pi);
+  const total = rows.reduce((s, r) => s + r.n, 0);
+  $('pcount').textContent = total + ' pcs';
+  $('plist').innerHTML = rows.map(r => '<li>' + swatch(r.ci) + '<span class="q">' + r.n + '×</span><span class="nm">' + cat[r.pi][1] +
+    '<small>' + colName[r.ci] + '</small></span><span class="pn">' + cat[r.pi][2] + '</span></li>').join('');
+  $('pnote').textContent = mult > 1 ? 'Quantities are for one module. Build ' + mult + ' of them; they go in the five middle bays.' : '';
+}
+
+// ---------------------------------------------------------------- steps tab
+function buildSteps(){
+  let html = '', last = null;
+  D.steps.forEach((st, i) => {
+    if (st[1] !== last){ html += '<div class="sec-h">' + D.sections[st[1]] + '</div>'; last = st[1]; }
+    let n = 0; stepParts[i].forEach(v => n += v);
+    html += '<button class="steplink" data-s="' + i + '"><span class="k">' + (i+1) + '</span><span>' + st[0] + '</span><span class="c">' + (n/st[2]) + '</span></button>';
+  });
+  $('p-steps').innerHTML = html;
+  $('p-steps').addEventListener('click', e => { const b = e.target.closest('.steplink'); if (b) go(+b.dataset.s, true); });
+}
+function markStep(){
+  document.querySelectorAll('.steplink').forEach(b => { if (+b.dataset.s === cur){ b.setAttribute('aria-current', 'step'); } else b.removeAttribute('aria-current'); });
+  const b = document.querySelector('.steplink[aria-current]'), box = $('p-steps');
+  if (b && !box.hidden){ const top = b.offsetTop - box.offsetTop; if (top < box.scrollTop || top > box.scrollTop + box.clientHeight - 30) box.scrollTop = top - 60; }
+}
+function buildBom(){
+  const m = new Map();
+  D.parts.forEach(p => { const k = p[0] + ':' + p[1]; m.set(k, (m.get(k)||0) + 1); });
+  const rows = [...m.entries()].map(([k, n]) => { const [pi, ci] = k.split(':').map(Number); return {pi, ci, n}; })
+    .sort((a, b) => colName[a.ci].localeCompare(colName[b.ci]) || b.n - a.n);
+  $('p-bom').innerHTML = '<table><thead><tr><th></th><th>Qty</th><th>Part</th><th>No.</th></tr></thead><tbody>' +
+    rows.map(r => '<tr><td>' + swatch(r.ci) + '</td><td class="n">' + r.n + '</td><td>' + cat[r.pi][1] + '<br><span class="pn">' + colName[r.ci] + '</span></td><td class="p">' + cat[r.pi][2] + '</td></tr>').join('') +
+    '</tbody></table>';
+}
+
+// ---------------------------------------------------------------- camera
+const views = {front:[[-38, 46, 150],[0, 18, 0]], side:[[150, 40, 8],[0, 16, 2]], above:[[-95, 120, 110],[0, 8, 2]], inside:[[0, 10, 27],[0, 12, -40]]};
+let tween = null;
+function setView(v){ const [p, t] = views[v]; tween = {p:new THREE.Vector3(...p), t:new THREE.Vector3(...t), k:0}; }
+function focusStep(){
+  const b = stepBox[cur]; if (b.isEmpty()) return;
+  const c = b.getCenter(new THREE.Vector3()); c.y += modY(D.parts.find(p => p[2] === cur)?.[3] ?? -1);
+  const off = camera.position.clone().sub(controls.target);
+  tween = {p:c.clone().add(off), t:c, k:0};
+}
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+function go(i, focus){
+  cur = Math.max(0, Math.min(NS-1, i)); apply();
+  if (focus) focusStep();
+}
+$('prev').onclick = () => go(cur-1, true);
+$('next').onclick = () => go(cur+1, true);
+$('first').onclick = () => { go(0); setView('above'); };
+$('slider').max = NS-1;
+$('slider').addEventListener('input', e => go(+e.target.value, false));
+addEventListener('keydown', e => {
+  if (e.target.matches('input,textarea')) return;
+  if (e.key === 'ArrowRight'){ go(cur+1, true); e.preventDefault(); }
+  if (e.key === 'ArrowLeft'){ go(cur-1, true); e.preventDefault(); }
+});
+document.querySelectorAll('[data-roof]').forEach(b => b.onclick = () => {
+  roof = b.dataset.roof; document.querySelectorAll('[data-roof]').forEach(x => x.setAttribute('aria-pressed', x === b)); apply(); });
+document.querySelectorAll('[data-view]').forEach(b => b.onclick = () => setView(b.dataset.view));
+$('cut').addEventListener('input', e => { cutH = +e.target.value; $('cutv').textContent = cutH >= 120 ? '—' : cutH + ' pl'; apply(); });
+document.querySelectorAll('[role=tab]').forEach(t => t.onclick = () => {
+  document.querySelectorAll('[role=tab]').forEach(x => { x.setAttribute('aria-selected', x === t); $(x.getAttribute('aria-controls')).hidden = x !== t; });
+  markStep();
+});
+
+// ---------------------------------------------------------------- meta
+const total = D.parts.length;
+$('meta').innerHTML = '<span><b>' + total.toLocaleString() + '</b> pieces</span><span><b>' + new Set(D.parts.map(p => p[0]+':'+p[1])).size + '</b> part/colour lots</span><span><b>' + NS + '</b> steps</span><span>base <b>51 × 77 cm</b></span><span>ridge <b>35 cm</b></span>';
+
+buildSteps(); buildBom();
+const [p0, t0] = views.front; camera.position.set(...p0); controls.target.set(...t0); controls.update();
+apply();
+$('loading').hidden = true;
+
+function resize(){ const r = canvas.parentElement.getBoundingClientRect(); renderer.setSize(r.width, r.height, false); camera.aspect = r.width / r.height; camera.updateProjectionMatrix(); }
+new ResizeObserver(resize).observe(canvas.parentElement); resize();
+(function loop(){
+  if (tween){
+    tween.k = reduce ? 1 : Math.min(1, tween.k + 0.08);
+    camera.position.lerp(tween.p, reduce ? 1 : 0.14); controls.target.lerp(tween.t, reduce ? 1 : 0.14);
+    if (tween.k >= 1 && camera.position.distanceTo(tween.p) < 0.05) tween = null;
+  }
+  controls.update(); renderer.render(scene, camera); requestAnimationFrame(loop);
+})();
+window.__go = go; window.__view = v => { const [p, t] = views[v]; camera.position.set(...p); controls.target.set(...t); controls.update(); };
+window.__roof = r => { roof = r; apply(); };
+})();
+</script>
