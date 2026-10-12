@@ -25,9 +25,11 @@ COLORS = {  # ldraw code: (name, viewer hex, bricklink id, transparent)
     46: ('Trans-Yellow', '#f5cd2f', 19, True),
     47: ('Trans-Clear', '#e8f2f4', 12, True),
     297: ('Pearl Gold', '#aa7f2e', 115, False),
+    320: ('Dark Red', '#720e0f', 59, False),
+    1: ('Blue', '#0055bf', 7, False),
     34: ('Trans-Green', '#5fa86c', 20, True),
 }
-WHITE, TAN, RB, LBG, DBG, MN, SB, BLACK, GREEN, GOLD = 15, 19, 70, 71, 72, 84, 379, 0, 2, 297
+WHITE, TAN, RB, LBG, DBG, MN, SB, BLACK, GREEN, GOLD, DRED, BLUE = 15, 19, 70, 71, 72, 84, 379, 0, 2, 297, 320, 1
 TDB, TRED, TLB, TYEL, TCLR, TGRN = 33, 36, 43, 46, 47, 34
 
 # ---------------------------------------------------------------- parts
