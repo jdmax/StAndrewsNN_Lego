@@ -6,13 +6,14 @@ from ldlib import bbox
 
 SECTIONS = {1: 'Base and floor', 2: 'Interior', 3: 'Walls', 4: 'Loft and aisle ceilings', 5: 'Ribs',
             6: 'Aisle roofs', 7: 'Gables', 8: 'Porch', 9: 'Roof modules'}
-SUBS = ['base', 'interior', 'walls', 'loft', 'ribs', 'aisles', 'gables', 'porch', 'roof_rear', 'roof_organ', 'roof_organ_lid', 'roof_mid', 'roof_mid_lid', 'roof_front']
+SUBS = ['base', 'interior', 'walls', 'loft', 'ribs', 'aisles', 'gables', 'porch', 'roof_rear', 'roof_organ', 'roof_organ_lid', 'roof_mid', 'roof_mid_lid', 'roof_front', 'roof_lanterns']
 SUB_TITLE = {'base': 'Baseplates, chancel platform and floor', 'interior': 'Pews and chancel furniture',
              'walls': 'Walls, posts and doors', 'loft': 'Choir loft, arcade beams and aisle ceilings',
              'ribs': 'Glulam ribs', 'aisles': 'Knee walls and aisle roofs', 'gables': 'Front and rear gables, reredos',
              'porch': 'Entrance porch', 'roof_rear': 'Rear roof module (fixed)',
              'roof_organ': 'Roof bay over the altar with organ grilles, fixed left side',
              'roof_organ_lid': 'Roof bay over the altar, lift-off right side',
+             'roof_lanterns': 'Lanterns hanging from the fixed left ceiling',
              'roof_mid_lid': 'Middle roof bay, lift-off right side (build %d)' % len(MID_MODS),
              'roof_mid': 'Middle roof bay, fixed left side (build %d)' % len(MID_MODS), 'roof_front': 'Front roof module (fixed) with cross'}
 
@@ -72,6 +73,8 @@ def prims(p):
     x0, z0, h0, wx, wz, hp = p['x0'], p['z0'], p['h0'], p['wx'], p['wz'], p['hp']
     f = FACE[p['r'] % 4]
     if k in ('box', 'tile', 'grille', 'jumper'): return [(0, x0, h0, z0, wx, hp, wz, 0)]
+    if k == 'round': return [(0, x0 + 0.08, h0, z0 + 0.08, wx - 0.16, hp, wz - 0.16, 0)]
+    if k == 'bar': return [(0, x0 - 0.1, h0, z0 - 0.1, 0.2, hp, 0.2, 0)]
     if k == 'slope': return [(1, x0, h0, z0, wx, hp, wz, f)]
     if k == 'slope18': return [(2, x0, h0, z0, wx, hp, wz, f)]
     if k == 'inv': return [(3, x0, h0, z0, wx, hp, wz, f)]
@@ -112,7 +115,7 @@ def viewer_data():
     bottoms = {}
     for j, p in enumerate(m.parts):
         pi = P(p['pid'])
-        if pi.kind == 'door' or pi.kind == 'inv': continue
+        if pi.kind in ('door', 'inv', 'bar'): continue
         for x in range(int(np.floor(p['x0'] + 1e-6)), int(np.ceil(p['x0'] + p['wx'] - 1e-6))):
             for z in range(int(np.floor(p['z0'] + 1e-6)), int(np.ceil(p['z0'] + p['wz'] - 1e-6))):
                 k = (x, z, p['h0']); s = sidx[p['step']]

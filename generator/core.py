@@ -24,9 +24,10 @@ COLORS = {  # ldraw code: (name, viewer hex, bricklink id, transparent)
     43: ('Trans-Light Blue', '#aee9ef', 15, True),
     46: ('Trans-Yellow', '#f5cd2f', 19, True),
     47: ('Trans-Clear', '#e8f2f4', 12, True),
+    297: ('Pearl Gold', '#aa7f2e', 115, False),
     34: ('Trans-Green', '#5fa86c', 20, True),
 }
-WHITE, TAN, RB, LBG, DBG, MN, SB, BLACK, GREEN = 15, 19, 70, 71, 72, 84, 379, 0, 2
+WHITE, TAN, RB, LBG, DBG, MN, SB, BLACK, GREEN, GOLD = 15, 19, 70, 71, 72, 84, 379, 0, 2, 297
 TDB, TRED, TLB, TYEL, TCLR, TGRN = 33, 36, 43, 46, 47, 34
 
 # ---------------------------------------------------------------- parts
@@ -45,8 +46,9 @@ _k('inv', '3665a', '3660a')
 _k('dbl', '3044b', '3043', '3041')
 _k('fence', '30055'); _k('grille', '2877'); _k('jumper', '15573')
 _k('doorframe', '60596'); _k('door', '60616a')
+_k('round', '6141', '85861'); _k('bar', '30374', '87994')
 
-BL_ID = {'3040b': '3040', '3665a': '3665', '3660a': '3660', '3044b': '3044', '3067a': '3067'}
+BL_ID = {'6141': '4073', '3040b': '3040', '3665a': '3665', '3660a': '3660', '3044b': '3044', '3067a': '3067'}
 
 class PartInfo:
     def __init__(s, pid):
@@ -61,7 +63,7 @@ class PartInfo:
         _, studs = geom(pid + '.dat')
         top = ('stud.dat', 'stud2.dat', 'stud2a.dat', 'stud6.dat', 'stud6a.dat', 'stud10.dat', 'stud15.dat')
         s.studs = sorted({(float(p[0]), float(p[2])) for b, p, d in studs if b in top and p[1] <= 4.5})
-        if s.kind in ('tile', 'dbl', 'door'): s.studs = []
+        if s.kind in ('tile', 'dbl', 'door', 'bar'): s.studs = []
 _PI = {}
 def P(pid):
     if pid not in _PI: _PI[pid] = PartInfo(pid)

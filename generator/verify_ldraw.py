@@ -7,7 +7,7 @@ from ldlib import geom
 bad=0
 for p in m.parts:
     pi=P(p['pid'])
-    if pi.kind in ('door',): continue
+    if pi.kind in ('door', 'bar'): continue
     T,_=geom(p['pid']+'.dat'); V=T.reshape(-1,3); V=V[V[:,1]>=0]   # body only (no studs)
     W=V@p['R'].T+p['pos']; X=W[:,0]/20; Z=-W[:,2]/20; H=-W[:,1]/8
     ok = (abs(X.min()-p['x0'])<0.06 and abs(X.max()-(p['x0']+p['wx']))<0.06 and abs(Z.min()-p['z0'])<0.06

@@ -436,6 +436,7 @@ lay_run(m, 'z', ('pc2', 1), ZF + 1, [DBG] * 7, 26, SLOPE18, width_axis_min=0, fa
 pack_area(m, {(x, z) for x in (-1, 0) for z in range(ZF + 1, ZF + 8)}, 29, TILES2D, prefer='z', colorfn=lambda x, z: DBG)
 
 # ================================================================== 9 roof modules
+LANTERN_LAYERS = (2, 9)                   # ceiling layers the outer and inner lanterns hang from
 def module(z0, z1, name, order, organ=False, cross=False, mult=1, title=None, split=False):
     """split: left half stays as part of the fixed roof; the right half (+ centre, top course
     and ridge) is a lid that lifts straight off. Nothing fixed sits on top of the lid."""
@@ -448,7 +449,10 @@ def module(z0, z1, name, order, organ=False, cross=False, mult=1, title=None, sp
                 width_axis_min=x0, face='+x' if sd > 0 else '-x')
     def inv(k, sd):
         x0 = 20 - k if sd > 0 else -(22 - k)
-        cols = [None if (sd < 0 and z in RIBS) else ic(z, k) for z in range(z0, z1)]   # rib takes the slot on the left
+        hook = split and sd < 0 and k in LANTERN_LAYERS
+        cols = [None if (sd < 0 and z in RIBS) or (hook and z == z0 + 6) else ic(z, k) for z in range(z0, z1)]
+        if hook:     # a plain brick here gives the ceiling a flat spot with an anti-stud to hang a lantern from
+            m.place('3004', MN, k - 22, z0 + 6, layer_h(k), r=0)
         lay_run(m, 'z', ('roof', name, sd), z0, cols, layer_h(k), INV45,
                 width_axis_min=x0, face='-x' if sd > 0 else '+x')
     def top(k):
@@ -506,6 +510,29 @@ for bi, (z0, z1) in enumerate(MID_MODS[1:]):     # copy the middle module to the
         i = m.place(p['pid'], p['color'], p['x0'], p['z0'] + dz, p['h0'], p['r'])
         m.parts[i]['copy_of'] = bi + 1
 module(*MODULES[-1], 'roof_front', 3, cross=True, title='Front roof module with the cross')
+
+# ================================================================== lanterns
+step((9, 5, 0), 'Hang the lanterns from the fixed ceiling', 'roof_lanterns')
+LANTERN_BAYS = [r + 6 for r in RIBS[:-2]]           # bay centres, nave and chancel (not over the loft)
+def lantern(x, z, ceil, double):
+    """Round-plate anchor clutched into the ceiling's inverted slope, black bar(s), lantern of
+    two white round bricks between pearl-gold caps."""
+    h = ceil - 1
+    a = m.place('6141', GOLD, x, z, h)
+    chain = [a]
+    for i in range(2 if double else 1):
+        h -= 10; chain.append(m.place('30374', BLACK, x + 0.5, z + 0.5, h))
+        if double and i == 0:
+            h -= 1; chain.append(m.place('85861', BLACK, x, z, h))      # slim joiner between the two rods
+    h -= 1; top = m.place('85861', GOLD, x, z, h)
+    for _ in range(2):
+        h -= 3; m.place('3062b', WHITE, x, z, h)
+    h -= 1; m.place('6141', GOLD, x, z, h)
+    for i in range(len(chain) - 1): m.parts[chain[i + 1]]['link'] = chain[i]
+    m.parts[top]['link'] = chain[-1]
+for z in LANTERN_BAYS:
+    for j, double in zip(LANTERN_LAYERS, (False, True)):
+        lantern(j - 21, z, layer_h(j), double)   # outer row lower, inner row higher up the slope
 
 # ================================================================== floor tiles (shown early)
 step((1, 4), 'Floor tiles', 'base')

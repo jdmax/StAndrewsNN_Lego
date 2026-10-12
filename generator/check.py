@@ -5,7 +5,7 @@ from core import P
 
 def bottom_points(p):
     pi = P(p['pid'])
-    if pi.kind == 'door': return []
+    if pi.kind in ('door', 'bar'): return []
     if pi.kind == 'inv':
         loc = [(sx, 0.0) for sx in np.arange(pi.lx0 + 10, pi.lx1, 20)]
     else:
@@ -26,6 +26,9 @@ for j, p in enumerate(m.parts):
         i = studs.get((bx, bz, p['h0']))
         if i is not None and i != j:
             adj[i].add(j); adj[j].add(i); nconn[j] += 1
+# bars and lanterns hang from their anchors
+for j, p in enumerate(m.parts):
+    if 'link' in p: adj[j].add(p['link']); adj[p['link']].add(j)
 # doors hang on their frames
 for j, p in enumerate(m.parts):
     if p['pid'] == '60616a': adj[j].add(j - 1); adj[j - 1].add(j)
