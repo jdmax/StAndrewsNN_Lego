@@ -95,9 +95,8 @@ def wall_color(skin, side, x, z, c):
         chapel = side == 'right' and c <= 5            # chapel door near the front corner
         if skin == 'outer':
             if c >= 8: return TCLR
-            if chapel and 38 <= z < 42: return None       # door frame
-            if chapel and z == 37: return mosaic('chapel', z, c)
-            w = window_at(z)
+            if chapel and 39 <= z < 43: return None       # door frame
+            w = window_at(z) or ((6, z - 36) if side == 'right' and 36 <= z < 39 else None)
             if w and abs(z) < 43:
                 wi, o = w
                 if c in (0, 7) or o == 1: return WHITE
@@ -105,8 +104,8 @@ def wall_color(skin, side, x, z, c):
             return TAN
         else:
             if c >= 8: return TCLR
-            if chapel and 37 <= z < 42: return None
-            w = window_at(z)
+            if chapel and 39 <= z < 42: return None
+            w = window_at(z) or ((6, z - 36) if side == 'right' and 36 <= z < 39 else None)
             if w and 1 <= c <= 6 and abs(z) < 42: return None
             return WHITE
     ax = abs(x + 0.5)
@@ -235,7 +234,7 @@ for c in range(10):
     step((3, c * 5 + 2), 'Course %d: left wall' % (c + 1), 'walls')
     ring_course(c, 'left')
     step((3, c * 5 + 3), 'Course %d: right wall' % (c + 1), 'walls')
-    if c == 0: door(29, 38, rf=1, color_door=WHITE)      # chapel door, opening outward
+    if c == 0: door(29, 39, rf=1, color_door=WHITE)      # chapel door, opening outward
     ring_course(c, 'right')
     step((3, c * 5 + 4), 'Course %d: posts and inner walls' % (c + 1), 'walls')
     if c < 9:
@@ -284,10 +283,12 @@ def slab_cells():
     for sd in (1, -1):
         for xx in range(20, 32):
             x = xx if sd > 0 else -xx - 1
-            zr = range(-44, 45) if xx >= 22 else range(-42, 42)
+            zr = range(-44, 44) if xx >= 22 else range(-42, 42)
             for z in zr: out.add((x, z))
     return out
-def slab_col(x, z): return WHITE if z in (43, 44, -44) and abs(x + 0.5) < 30 else MN
+def slab_col(x, z):
+    if z == 43 and abs(x + 0.5) < 30: return mosaic('slab', x, z)   # glass carries on up to the aisle roof
+    return WHITE if z == -44 and abs(x + 0.5) < 30 else MN
 sc = slab_cells()
 pack_area(m, sc, 30, PLATES2D, prefer='x', colorfn=slab_col)
 step((4, 4), 'Aisle ceilings (upper plate layer)', 'loft')
@@ -323,15 +324,14 @@ for ci, h in enumerate((32, 35, 38)):
         # aisle roof stair: one course of 18-degree slopes plus fill behind it
         lo, hi = [(28, 32), (25, 29), (22, 26)][ci]
         x0 = lo if sd > 0 else -hi
-        lay_run(m, 'z', ('a18', sd, ci), -44, [DBG] * 89, h, SLOPE18, width_axis_min=x0, face='+x' if sd > 0 else '-x')
+        lay_run(m, 'z', ('a18', sd, ci), -44, [DBG] * 89, h, SLOPE18, width_axis_min=x0, face='+x' if sd > 0 else '-x', forbid={44})
         fill = range(22, lo) if sd > 0 else range(-lo, -22)
         for x in fill:
             def fc(z):
-                if z == 44: return WHITE          # end of the 1-stud aisle-roof overhang
-                if z in (42, 43): return LBG
+                if z in (42, 43): return mosaic('afill', x, z, h)
                 if z in (-44, -43): return WHITE
                 return LBG
-            lay_run(m, 'z', x, -44, [fc(z) for z in range(-44, 45)], h, trans_or_brick)
+            lay_run(m, 'z', x, -44, [fc(z) for z in range(-44, 44)], h, trans_or_brick)
 
 # ================================================================== 7 gables (front, rear + reredos)
 def gable_band(side, h, hp, xs, k=None, table=None):

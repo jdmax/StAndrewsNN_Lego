@@ -203,6 +203,7 @@ def pack_area(m, cells, h0, sizes, prefer='x', hp=1, colorfn=None):
         if (x, z) in done: continue
         c0 = col(x, z)
         for w, d, pid, r in rects:
+            if COLORS[c0][3] and w * d > 2: continue        # transparent parts: 1x1 and 1x2 only
             fp = [(x + i, z + j) for i in range(w) for j in range(d)]
             if all(c in cells and c not in done and col(*c) == c0 for c in fp):
                 m.place(pid, c0, x, z, h0, r); done.update(fp); break
