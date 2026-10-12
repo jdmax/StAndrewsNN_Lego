@@ -449,7 +449,7 @@ def module(z0, z1, name, order, organ=False, cross=False, mult=1, title=None, sp
                 width_axis_min=x0, face='+x' if sd > 0 else '-x')
     def inv(k, sd):
         x0 = 20 - k if sd > 0 else -(22 - k)
-        hook = split and sd < 0 and k in LANTERN_LAYERS
+        hook = split and not organ and sd < 0 and k in LANTERN_LAYERS
         cols = [None if (sd < 0 and z in RIBS) or (hook and z == z0 + 6) else ic(z, k) for z in range(z0, z1)]
         if hook:     # a plain brick here gives the ceiling a flat spot with an anti-stud to hang a lantern from
             m.place('3004', MN, k - 22, z0 + 6, layer_h(k), r=0)
@@ -513,7 +513,7 @@ module(*MODULES[-1], 'roof_front', 3, cross=True, title='Front roof module with 
 
 # ================================================================== lanterns
 step((9, 5, 0), 'Hang the lanterns from the fixed ceiling', 'roof_lanterns')
-LANTERN_BAYS = [r + 6 for r in RIBS[:-2]]           # bay centres, nave and chancel (not over the loft)
+LANTERN_BAYS = [r + 6 for r in RIBS[2:-1]]          # the five nave bays and the narthex bay; none over the chancel
 def lantern(x, z, ceil, double):
     """Round-plate anchor clutched into the ceiling's inverted slope, black bar(s), lantern of
     two white round bricks between pearl-gold caps."""
