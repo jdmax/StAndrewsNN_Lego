@@ -64,6 +64,7 @@ def gable_color(side, skin, x, h, k=None):
         if k is not None and k >= 1:
             lim = 20 - k
             if x in (lim - 1, lim - 2, lim - 3, -lim, -lim + 1, -lim + 2): return mosaic('rake', x, h)
+        if 24 <= h < 41 and x in (19, 20, 21, -22, -21, -20): return mosaic('rake', x, h)
         f = front_feature(x, h)
         if h >= 30 and h < 32 and -4 <= x < 4: return WHITE if skin == 'outer' else MN
         if f is not None:
@@ -91,8 +92,11 @@ def cross_hole(x, h):
 def wall_color(skin, side, x, z, c):
     h = 3 * c
     if side in ('left', 'right'):
+        chapel = side == 'right' and c <= 5            # chapel door near the front corner
         if skin == 'outer':
             if c >= 8: return TCLR
+            if chapel and 38 <= z < 42: return None       # door frame
+            if chapel and z == 37: return mosaic('chapel', z, c)
             w = window_at(z)
             if w and abs(z) < 43:
                 wi, o = w
@@ -101,6 +105,7 @@ def wall_color(skin, side, x, z, c):
             return TAN
         else:
             if c >= 8: return TCLR
+            if chapel and 37 <= z < 42: return None
             w = window_at(z)
             if w and 1 <= c <= 6 and abs(z) < 42: return None
             return WHITE
@@ -139,11 +144,11 @@ def ring_course(c, which):
             if side == which:
                 lay_run(m, 'x', z, fr_x.start, [wall_color(skin, side, x, z, c) for x in fr_x], h0, trans_or_brick)
 
-def door(x0, z, h0=0, color_frame=WHITE, color_door=RB):
-    i = m.place('60596', color_frame, x0, z, h0, r=2)
-    p = m.parts[i]['pos']
+def door(x0, z, h0=0, color_frame=WHITE, color_door=RB, rf=2):
+    i = m.place('60596', color_frame, x0, z, h0, r=rf)
+    p = m.parts[i]['pos']; Rf = rotY(rf)
     m.place('60616a', color_door, 0, 0, 0, r=0, check=False, mark=False)
-    m.parts[-1]['pos'] = p + np.array([-32, 0, -5]); m.parts[-1]['R'] = rotY(0)
+    m.parts[-1]['pos'] = p + Rf @ np.array([32, 0, 5]); m.parts[-1]['R'] = Rf @ rotY(2)
 
 # ================================================================== 1 base & floor
 step((1, 0), 'Baseplates', 'base')
@@ -230,6 +235,7 @@ for c in range(10):
     step((3, c * 5 + 2), 'Course %d: left wall' % (c + 1), 'walls')
     ring_course(c, 'left')
     step((3, c * 5 + 3), 'Course %d: right wall' % (c + 1), 'walls')
+    if c == 0: door(29, 38, rf=1, color_door=WHITE)      # chapel door, opening outward
     ring_course(c, 'right')
     step((3, c * 5 + 4), 'Course %d: posts and inner walls' % (c + 1), 'walls')
     if c < 9:
