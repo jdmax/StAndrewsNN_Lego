@@ -135,8 +135,8 @@ td.p{font:11.5px var(--mono);color:var(--muted)}
             <h3>Scale</h3>
             <div class="dims">
               <span>Minifig scale, 1 stud</span><span>≈ 0.34 m</span>
-              <span>Nave footprint</span><span>60 × 88 studs</span>
-              <span>Base (six 32 × 32 baseplates)</span><span>64 × 96 studs · 51 × 77 cm</span>
+              <span>Nave footprint</span><span>60 × 106 studs</span>
+              <span>Base (eight 32 × 32 baseplates)</span><span>64 × 128 studs · 51 × 102 cm</span>
               <span>Brick wall / glass band top</span><span>8 / 10 bricks</span>
               <span>Roof break</span><span>41 plates ≈ 5.5 m</span>
               <span>Ridge</span><span>110 plates ≈ 14.8 m</span>
@@ -148,7 +148,7 @@ td.p{font:11.5px var(--mono);color:var(--muted)}
             <ul>
               <li>Walls are two bricks thick: tan brick outside, white plaster inside, with a clear clerestory band on top.</li>
               <li>The steep roof is a stair of dark grey 45° slopes backed by medium nougat inverted slopes, so the underside reads as the wood ceiling.</li>
-              <li>The roof splits into seven modules at the ribs. The five middle ones are identical and lift straight off the knee walls to show the interior.</li>
+              <li>Nine ribs divide the roof into ten modules. The eight between ribs lift straight off the knee walls to show the interior; seven of them are identical.</li>
               <li>Ribs are reddish brown slope stairs standing on the arcade posts, one stud thick, with a small gap below the ceiling so the roof lifts freely.</li>
               <li>The aisles have a flat medium nougat ceiling at the top of the glass band; the low aisle roofs are fixed.</li>
             </ul>
@@ -272,13 +272,13 @@ studs.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
 D.studs.forEach((s, i) => { tmpC.setStyle(colHex[D.parts[s[0]][1]]); studs.setColorAt(i, tmpC); });
 scene.add(studs);
 // baseplate stud grid hint
-const grid = new THREE.GridHelper(96, 96, 0x000000, 0x000000); grid.material.transparent = true; grid.material.opacity = .06;
-grid.scale.set(64/96, 1, 1); grid.position.set(0, 0.01, 3); scene.add(grid);
+const grid = new THREE.GridHelper(128, 128, 0x000000, 0x000000); grid.material.transparent = true; grid.material.opacity = .06;
+grid.scale.set(64/128, 1, 1); grid.position.set(0, 0.01, 4); scene.add(grid);
 
 // ---------------------------------------------------------------- state
 let cur = NS - 1, roof = 'lift', cutH = 999;
 const LIFT = 16;
-function modY(mod){ return (roof === 'lift' && mod >= 1 && mod <= 5) ? LIFT : 0; }
+function modY(mod){ return (roof === 'lift' && mod >= 1 && mod <= D.modules.length - 2) ? LIFT : 0; }
 function modVisible(mod){ return !(roof === 'off' && mod >= 0); }
 const M4 = new THREE.Matrix4();
 function apply(){
@@ -316,7 +316,7 @@ function renderParts(){
   $('pcount').textContent = total + ' pcs';
   $('plist').innerHTML = rows.map(r => '<li>' + swatch(r.ci) + '<span class="q">' + r.n + '×</span><span class="nm">' + cat[r.pi][1] +
     '<small>' + colName[r.ci] + '</small></span><span class="pn">' + cat[r.pi][2] + '</span></li>').join('');
-  $('pnote').textContent = mult > 1 ? 'Quantities are for one module. Build ' + mult + ' of them; they go in the five middle bays.' : '';
+  $('pnote').textContent = mult > 1 ? 'Quantities are for one module. Build ' + mult + ' of them; they go in the middle bays.' : '';
 }
 
 // ---------------------------------------------------------------- steps tab
@@ -346,7 +346,7 @@ function buildBom(){
 }
 
 // ---------------------------------------------------------------- camera
-const views = {front:[[-38, 46, 150],[0, 18, 0]], side:[[150, 40, 8],[0, 16, 2]], above:[[-95, 120, 110],[0, 8, 2]], inside:[[0, 10, 27],[0, 12, -40]], loft:[[0, 5, -20],[0, 22, 44]]};
+const views = {front:[[-44, 50, 170],[0, 18, -2]], side:[[175, 44, -2],[0, 16, -4]], above:[[-110, 135, 125],[0, 8, -4]], inside:[[0, 10, 22],[0, 12, -56]], loft:[[0, 5, -22],[0, 22, 47]]};
 let tween = null;
 function setView(v){ const [p, t] = views[v]; tween = {p:new THREE.Vector3(...p), t:new THREE.Vector3(...t), k:0}; }
 function focusStep(){
@@ -382,7 +382,7 @@ document.querySelectorAll('[role=tab]').forEach(t => t.onclick = () => {
 
 // ---------------------------------------------------------------- meta
 const total = D.parts.length;
-$('meta').innerHTML = '<span><b>' + total.toLocaleString() + '</b> pieces</span><span><b>' + new Set(D.parts.map(p => p[0]+':'+p[1])).size + '</b> part/colour lots</span><span><b>' + NS + '</b> steps</span><span>base <b>51 × 77 cm</b></span><span>ridge <b>35 cm</b></span>';
+$('meta').innerHTML = '<span><b>' + total.toLocaleString() + '</b> pieces</span><span><b>' + new Set(D.parts.map(p => p[0]+':'+p[1])).size + '</b> part/colour lots</span><span><b>' + NS + '</b> steps</span><span>base <b>51 × 102 cm</b></span><span>ridge <b>35 cm</b></span>';
 
 buildSteps(); buildBom();
 const [p0, t0] = views.front; camera.position.set(...p0); controls.target.set(...t0); controls.update();

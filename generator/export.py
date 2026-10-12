@@ -1,17 +1,18 @@
 """Export: LDraw MPD (for BrickLink Studio), BrickLink wanted-list XML, and compact viewer JSON."""
 import json, collections, numpy as np
-from build import m, STEPS, MODULES
+from build import m, STEPS, MODULES, MID_MODS
 from core import P, COLORS, BL_ID
 from ldlib import bbox
 
 SECTIONS = {1: 'Base and floor', 2: 'Interior', 3: 'Walls', 4: 'Loft and aisle ceilings', 5: 'Ribs',
             6: 'Aisle roofs', 7: 'Gables', 8: 'Porch', 9: 'Roof modules'}
-SUBS = ['base', 'interior', 'walls', 'loft', 'ribs', 'aisles', 'gables', 'porch', 'roof_rear', 'roof_mid', 'roof_front']
+SUBS = ['base', 'interior', 'walls', 'loft', 'ribs', 'aisles', 'gables', 'porch', 'roof_rear', 'roof_organ', 'roof_mid', 'roof_front']
 SUB_TITLE = {'base': 'Baseplates, chancel platform and floor', 'interior': 'Pews and chancel furniture',
              'walls': 'Walls, posts and doors', 'loft': 'Choir loft, arcade beams and aisle ceilings',
              'ribs': 'Glulam ribs', 'aisles': 'Knee walls and aisle roofs', 'gables': 'Front and rear gables, reredos',
              'porch': 'Entrance porch', 'roof_rear': 'Rear roof module (fixed)',
-             'roof_mid': 'Middle roof module (build 5, lift-off)', 'roof_front': 'Front roof module (fixed) with cross'}
+             'roof_organ': 'Roof module over the altar with organ grilles (lift-off)',
+             'roof_mid': 'Middle roof module (build %d, lift-off)' % len(MID_MODS), 'roof_front': 'Front roof module (fixed) with cross'}
 
 order = sorted(STEPS, key=lambda s: STEPS[s]['order'])
 sidx = {s: i for i, s in enumerate(order)}
@@ -29,8 +30,8 @@ def write_mpd(path):
           '0 Name: st_andrews_nave.ldr', "0 Author: St. Andrew's LEGO project (generated)", '0 !LDRAW_ORG Unofficial_Model', '']
     for sub in SUBS:
         if sub == 'roof_mid':
-            for i, (a, b) in enumerate(MODULES[1:6]):
-                dz = a - MODULES[1][0]
+            for i, (a, b) in enumerate(MID_MODS):
+                dz = a - MID_MODS[0][0]
                 L.append('1 16 0 0 %d 1 0 0 0 1 0 0 0 1 roof_mid.ldr' % (-20 * dz))
         else:
             L.append('1 16 0 0 0 1 0 0 0 1 0 0 0 1 %s.ldr' % sub)

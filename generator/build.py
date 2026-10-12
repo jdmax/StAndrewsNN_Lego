@@ -1,16 +1,21 @@
 """St. Andrew's Episcopal, Newport News - minifig-scale nave, generated on a stud grid.
 
-Grid: x across (-30..30), z along (-44 rear .. 44 front), h in plates. Baseplates 64 x 96.
+Grid: x across (-30..30), z along (-58 rear .. 47 front), h in plates. Baseplates 64 x 128.
 Massing model -> studs at ~0.336 m/stud, 1 plate ~0.134 m.
 """
 import hashlib
 from core import *
 
 # ------------------------------------------------------------------ layout constants
-RIBS = [-28, -16, -4, 8, 20, 32]            # rib column z (1 stud thick)
-WIN = [-36, -23, -11, 1, 13, 25]            # side window units, 3 wide (glass|white|glass)
-POSTS_Z = RIBS + [41]                       # extra post under the loft against the front wall
-MODULES = [(-45, -28), (-28, -16), (-16, -4), (-4, 8), (8, 20), (20, 32), (32, 45)]
+ZF, ZFI = 47, 46                             # front wall: outer / inner skin rows
+ZR, ZRI = -58, -57                           # rear wall: outer / inner skin rows
+ZRD = -56                                    # reredos lining
+RIBS = [-52, -40, -28, -16, -4, 8, 20, 32, 44]   # rib columns (1 stud thick), 12 studs apart
+WIN = [r + 5 for r in RIBS[:-1]]             # one window pair centred in each bay
+POSTS_Z = RIBS
+MODULES = [(ZR - 1, RIBS[0])] + [(a, b) for a, b in zip(RIBS, RIBS[1:])] + [(RIBS[-1], ZF + 2)]
+MID_MODS = MODULES[2:-1]                     # identical lift-off modules
+CHAPEL = range(41, 45)                       # chapel door in the right wall near the front corner
 K = 41                                       # roof break (plates)
 def layer_h(k): return K + 3 * (k - 1)        # bottom of steep-roof layer k
 PEW_SEATS = [-20 + 3 * i for i in range(17)]
@@ -90,7 +95,7 @@ def cross_hole(x, h):
     return False
 
 def clerestory(z, c):
-    if abs(z) >= 43: return TCLR                       # corners
+    if z >= ZFI or z <= ZRI: return TCLR               # corners
     o = z % 4
     if o == 0: return WHITE                            # mullion
     if o == 2: return [TRED, TGRN, TDB, TYEL][(z // 4) % 4]   # diamond medallion
@@ -102,17 +107,17 @@ def wall_color(skin, side, x, z, c):
         chapel = side == 'right' and c <= 5            # chapel door near the front corner
         if c >= 8: return clerestory(z, c)
         if skin == 'outer':
-            if chapel and 39 <= z < 43: return None       # door frame
-            w = window_at(z) or ((6, z - 36) if 36 <= z < 39 else None)
-            if w and abs(z) < 43:
+            if chapel and z in CHAPEL: return None        # door frame
+            w = window_at(z)
+            if w and ZRI < z < ZFI:
                 wi, o = w
                 if c in (0, 7) or o == 1: return WHITE
                 return PANE[c] if wi % 2 == 0 else [None, TDB, TDB, TLB, TDB, TRED, TDB][c]
             return TAN
         else:
-            if chapel and 39 <= z < 42: return None
-            w = window_at(z) or ((6, z - 36) if 36 <= z < 39 else None)
-            if w and 1 <= c <= 6 and abs(z) < 42: return None
+            if chapel and z in CHAPEL: return None
+            w = window_at(z)
+            if w and 1 <= c <= 6 and ZRI < z < ZFI: return None
             return WHITE
     ax = abs(x + 0.5)
     if side == 'front':
@@ -139,7 +144,7 @@ def wall_color(skin, side, x, z, c):
 
 def ring_course(c, which):
     h0 = 3 * c; even = c % 2 == 0
-    for skin, (xr, xl, zf, zb) in (('outer', (29, -30, 43, -44)), ('inner', (28, -29, 42, -43))):
+    for skin, (xr, xl, zf, zb) in (('outer', (29, -30, ZF, ZR)), ('inner', (28, -29, ZFI, ZRI))):
         side_z = range(zb, zf + 1) if even else range(zb + 1, zf)
         fr_x = range(xl + 1, xr) if even else range(xl, xr + 1)
         for side, x in (('right', xr), ('left', xl)):
@@ -158,12 +163,12 @@ def door(x0, z, h0=0, color_frame=WHITE, color_door=RB, rf=2):
 # ================================================================== 1 base & floor
 step((1, 0), 'Baseplates', 'base')
 for x0 in (-32, 0):
-    for z0 in (-45, -13, 19):
+    for z0 in (-60, -28, 4, 36):
         m.place('3811', LBG, x0, z0, 0)
 
 step((1, 1), 'Chancel platform: brick layer', 'base')
-plat = {(x, z) for x in range(-20, 20) for z in range(-42, -26)}
-amb = {(x, z) for s in (1, -1) for x in (range(22, 28) if s > 0 else range(-28, -22)) for z in range(-42, -30)}
+plat = {(x, z) for x in range(-20, 20) for z in range(ZRD, -26) if z not in RIBS or abs(x + 0.5) < 20}
+amb = {(x, z) for s in (1, -1) for x in (range(22, 28) if s > 0 else range(-28, -22)) for z in range(ZRD, -30)}
 pack_area(m, plat | amb, 0, BRICKS2D, prefer='x', colorfn=lambda x, z: LBG)
 step((1, 2), 'Chancel platform: plate layer', 'base')
 pack_area(m, plat | amb, 3, PLATES2D, prefer='z', colorfn=lambda x, z: LBG)
@@ -199,28 +204,48 @@ lay_run(m, 'x', -23, -18, [RB] * 4, 15, TILE1, hp=1)
 lay_run(m, 'z', -18, -26, [RB] * 3, 15, TILE1, hp=1)
 lay_run(m, 'z', -15, -26, [RB] * 3, 15, TILE1, hp=1)
 
-step((2, 3), 'Altar and altar rail', 'interior')
-alt = {(x, z) for x in range(-3, 3) for z in range(-40, -37)}
-pack_area(m, alt, 4, BRICKS2D, prefer='x', colorfn=lambda x, z: RB)
-pack_area(m, alt, 7, BRICKS2D, prefer='z', colorfn=lambda x, z: RB)
-pack_area(m, alt, 10, TILES2D, prefer='x', colorfn=lambda x, z: WHITE)
+step((2, 3), 'Altar dais, altar and altar rail', 'interior')
+dais = {(x, z) for x in range(-10, 10) for z in range(-55, -48)}
+pack_area(m, dais, 4, PLATES2D, prefer='x', colorfn=lambda x, z: LBG)
+pack_area(m, dais, 5, PLATES2D, prefer='z', colorfn=lambda x, z: LBG)
+alt = {(x, z) for x in range(-3, 3) for z in range(-54, -51)}
+pack_area(m, alt, 6, BRICKS2D, prefer='x', colorfn=lambda x, z: RB)
+pack_area(m, alt, 9, BRICKS2D, prefer='z', colorfn=lambda x, z: RB)
+pack_area(m, alt, 12, TILES2D, prefer='x', colorfn=lambda x, z: WHITE)
+pack_area(m, dais - alt, 6, TILES2D, prefer='x', colorfn=lambda x, z: WHITE)
 for x0 in (-9, -5, 1, 5):
-    m.place('30055', RB, x0, -35, 4, r=0)
+    m.place('30055', RB, x0, -46, 4, r=0)
 
-step((2, 4), 'Choir stalls and parapets', 'interior')
+step((2, 4), 'Choir pews: three rows each side', 'interior')
+ZS = -38                                         # choir pews run z -38..-31, facing the centre aisle
 for sd in (1, -1):
-    for seat, back in ((17, 18), (14, 15)):
-        xs, xb = (seat, back) if sd > 0 else (-seat - 1, -back - 1)
-        lay_run(m, 'z', xs, -37, [RB] * 8, 4, BRICK1)
-        lay_run(m, 'z', xb, -37, [RB] * 8, 4, BRICK1)
-        lay_run(m, 'z', xb, -37, [RB] * 8, 7, BRICK1)
-        lay_run(m, 'z', xb, -37, [RB] * 8, 10, TILE1, hp=1)
-for h in (4, 7):
+    X = (lambda x: x) if sd > 0 else (lambda x: -x - 1)
+    for h in (4, 7):                             # fluted front along the centre aisle
+        lay_run(m, 'z', X(7), ZS, [RB] * 8, h, {2: '2877'})
+    lay_run(m, 'z', X(7), ZS, [RB] * 8, 10, TILE1, hp=1)
+    for seat in (9, 12, 15):
+        lay_run(m, 'z', X(seat), ZS, [RB] * 8, 4, BRICK1)
+        for h in (4, 7):
+            lay_run(m, 'z', X(seat + 1), ZS, [RB] * 8, h, BRICK1)
+        lay_run(m, 'z', X(seat + 1), ZS, [RB] * 8, 10, TILE1, hp=1)
+for h in (4, 7):                                 # fluted parapets across the front of the choir
     lay_run(m, 'x', -27, 7, [RB] * 6, h, {2: '2877'})
     m.place('3005', RB, 13, -27, h)
     lay_run(m, 'x', -27, -19, [RB] * 12, h, {2: '2877'})
 lay_run(m, 'x', -27, 7, [RB] * 7, 10, TILE1, hp=1)
 lay_run(m, 'x', -27, -19, [RB] * 12, 10, TILE1, hp=1)
+
+step((2, 6), 'Organ console', 'interior')
+org = {(x, z) for x in range(-19, -14) for z in range(-44, -40)}
+for c in range(2):
+    pack_area(m, org, 4 + 3 * c, BRICKS2D, prefer='x' if c % 2 == 0 else 'z', colorfn=lambda x, z: RB)
+lay_run(m, 'x', -41, -19, [WHITE] * 5, 10, TILE1, hp=1)              # lower manual, nearest the bench
+lay_run(m, 'x', -42, -19, [BLACK] * 5, 10, TILE1, hp=1)              # upper manual
+for zr in (-43, -44):                                                 # music desk / case behind the keys
+    lay_run(m, 'x', zr, -19, [RB] * 5, 10, BRICK1)
+for x0 in (-18, -16):                                                  # bench
+    m.place('3005', RB, x0, -39, 4)
+m.place('3710', RB, -18, -39, 7, r=0)
 
 step((2, 5), 'Lectern', 'interior')
 lec = {(x, z) for x in range(14, 18) for z in range(-29, -26)}
@@ -233,14 +258,14 @@ for c in range(10):
     h0 = 3 * c
     step((3, c * 5 + 0), 'Course %d: front wall' % (c + 1), 'walls')
     if c == 0:
-        door(-4, 43); door(0, 43)
+        door(-4, ZF); door(0, ZF)
     ring_course(c, 'front')
     step((3, c * 5 + 1), 'Course %d: rear wall' % (c + 1), 'walls')
     ring_course(c, 'rear')
     step((3, c * 5 + 2), 'Course %d: left wall' % (c + 1), 'walls')
     ring_course(c, 'left')
     step((3, c * 5 + 3), 'Course %d: right wall' % (c + 1), 'walls')
-    if c == 0: door(29, 39, rf=1, color_door=WHITE)      # chapel door, opening outward
+    if c == 0: door(29, CHAPEL[0], rf=1, color_door=WHITE)      # chapel door, opening outward
     ring_course(c, 'right')
     step((3, c * 5 + 4), 'Course %d: posts and inner walls' % (c + 1), 'walls')
     if c < 9:
@@ -248,7 +273,7 @@ for c in range(10):
             for x0 in (20, -22):
                 m.place('3004', RB, x0, z, h0, r=0)
         for x0 in (20, -22):                                   # chancel side walls (white, 2 wide)
-            lay_run(m, 'z', ('chw', x0), -42, [WHITE] * 14, h0, BRICK2, width_axis_min=x0)
+            lay_run(m, 'z', ('chw', x0), ZRD, [None if z in RIBS else WHITE for z in range(ZRD, -28)], h0, BRICK2, width_axis_min=x0)
     # cross walls at the end of each aisle, doors into the ambulatory
     for sd in (1, -1):
         xs = list(range(22, 28)) if sd > 0 else list(range(-28, -22))
@@ -272,29 +297,29 @@ for c in range(10):
 
 # ================================================================== 4 loft, beams, slab
 step((4, 0), 'Choir loft floor', 'loft')
-loft = {(x, z) for x in range(-28, 28) for z in range(33, 43) if m.free(x, z, 21)}
-LOFT1 = {(10, 2): '3832', (8, 2): '3034', (6, 2): '3795', (4, 2): '3020', (2, 2): '3022', (2, 1): '3023', (1, 1): '3024'}
+loft = {(x, z) for x in range(-28, 28) for z in range(33, ZFI + 1) if m.free(x, z, 21)}
+LOFT1 = {(12, 2): '2445', (10, 2): '3832', (8, 2): '3034', (6, 2): '3795', (4, 2): '3020', (2, 2): '3022', (2, 1): '3023', (1, 1): '3024'}
 pack_area(m, loft, 21, LOFT1, prefer='z', colorfn=lambda x, z: MN)
 pack_area(m, loft, 22, PLATES2D, prefer='x', colorfn=lambda x, z: MN)
-lay_run(m, 'x', 42, -28, [WHITE] * 56, 23, PLATE1, hp=1)
+lay_run(m, 'x', ZFI, -28, [WHITE] * 56, 23, PLATE1, hp=1)
 step((4, 1), 'Choir loft railing', 'loft')
 for x0 in list(range(-20, 20, 4)) + [23, -27]:
     m.place('30055', RB, x0, 33, 23, r=0)
 step((4, 2), 'Arcade beams', 'loft')
 for x0 in (20, -22):
-    lay_run(m, 'z', ('beam', x0), -42, [RB] * 84, 27, BRICK2, width_axis_min=x0)
+    lay_run(m, 'z', ('beam', x0), ZRD, [RB] * (ZFI - ZRD), 27, BRICK2, width_axis_min=x0)
 step((4, 3), 'Aisle ceilings (lower plate layer)', 'loft')
 def slab_cells():
     out = set()
     for sd in (1, -1):
         for xx in range(20, 32):
             x = xx if sd > 0 else -xx - 1
-            zr = range(-44, 44) if xx >= 22 else range(-42, 42)
+            zr = range(ZR, ZF + 1) if xx >= 22 else range(ZRD, ZFI)
             for z in zr: out.add((x, z))
     return out
 def slab_col(x, z):
-    if z == 43 and abs(x + 0.5) < 30: return mosaic('slab', x, z)   # glass carries on up to the aisle roof
-    return WHITE if z == -44 and abs(x + 0.5) < 30 else MN
+    if z == ZF and abs(x + 0.5) < 30: return mosaic('slab', x, z)   # glass carries on up to the aisle roof
+    return WHITE if z == ZR and abs(x + 0.5) < 30 else MN
 sc = slab_cells()
 pack_area(m, sc, 30, PLATES2D, prefer='x', colorfn=slab_col)
 step((4, 4), 'Aisle ceilings (upper plate layer)', 'loft')
@@ -322,26 +347,26 @@ for ci, h in enumerate((32, 35, 38)):
     for sd in (1, -1):
         xa, xb = (20, 21) if sd > 0 else (-21, -22)
         xmin = 20 if sd > 0 else -22
-        both = [MN if (m.free(xa, z, h) and m.free(xb, z, h)) else None for z in range(-42, 42)]
-        lay_run(m, 'z', ('knee', sd), -42, both, h, BRICK2, width_axis_min=xmin)
+        both = [MN if (m.free(xa, z, h) and m.free(xb, z, h)) else None for z in range(ZRD, ZFI)]
+        lay_run(m, 'z', ('knee', sd), ZRD, both, h, BRICK2, width_axis_min=xmin)
         for x in (xa, xb):
-            single = [MN if m.free(x, z, h) else None for z in range(-42, 42)]
-            lay_run(m, 'z', x, -42, single, h, BRICK1)
+            single = [MN if m.free(x, z, h) else None for z in range(ZRD, ZFI)]
+            lay_run(m, 'z', x, ZRD, single, h, BRICK1)
         # aisle roof stair: one course of 18-degree slopes plus fill behind it
         lo, hi = [(28, 32), (25, 29), (22, 26)][ci]
         x0 = lo if sd > 0 else -hi
-        lay_run(m, 'z', ('a18', sd, ci), -44, [DBG] * 89, h, SLOPE18, width_axis_min=x0, face='+x' if sd > 0 else '-x', forbid={44})
+        lay_run(m, 'z', ('a18', sd, ci), ZR, [DBG] * (ZF + 2 - ZR), h, SLOPE18, width_axis_min=x0, face='+x' if sd > 0 else '-x', forbid={ZF + 1})
         fill = range(22, lo) if sd > 0 else range(-lo, -22)
         for x in fill:
             def fc(z):
-                if z in (42, 43): return mosaic('afill', x, z, h)
-                if z in (-44, -43): return WHITE
+                if z in (ZFI, ZF): return mosaic('afill', x, z, h)
+                if z in (ZR, ZRI): return WHITE
                 return LBG
-            lay_run(m, 'z', x, -44, [fc(z) for z in range(-44, 44)], h, trans_or_brick)
+            lay_run(m, 'z', x, ZR, [fc(z) for z in range(ZR, ZF + 1)], h, trans_or_brick)
 
 # ================================================================== 7 gables (front, rear + reredos)
 def gable_band(side, h, hp, xs, k=None, table=None):
-    zo, zi = (43, 42) if side == 'front' else (-44, -43)
+    zo, zi = (ZF, ZFI) if side == 'front' else (ZR, ZRI)
     for skin, z in (('outer', zo), ('inner', zi)):
         cols = [gable_color(side, skin, x, h, k) for x in xs]
         cols = [c if (c is None or m.free(x, z, h)) else None for x, c in zip(xs, cols)]
@@ -352,8 +377,8 @@ def reredos(h, hp, xs):
         if h < 11: return LBG
         if -5 <= x < 5: return None
         return WHITE
-    cols = [col(x) if m.free(x, -42, h) else None for x in xs]
-    lay_run(m, 'x', -42, xs[0], cols, h, PLATE1 if hp == 1 else BRICK1, hp=hp)
+    cols = [col(x) if m.free(x, ZRD, h) else None for x in xs]
+    lay_run(m, 'x', ZRD, xs[0], cols, h, PLATE1 if hp == 1 else BRICK1, hp=hp)
 
 step((7, 0), 'Reredos wainscot', 'gables')
 reredos(4, 1, list(range(-20, 20)))
@@ -385,18 +410,18 @@ for gi, grp in enumerate(groups):
 step((8, 0), 'Porch piers', 'porch')
 for c in range(7):
     for x0 in (-7, 5):
-        m.place('3003', TAN, x0, 44, 3 * c)
+        m.place('3003', TAN, x0, ZF + 1, 3 * c)
 step((8, 1), 'Porch canopy', 'porch')
-canopy = {(x, z) for x in range(-7, 7) for z in range(44, 51)}
+canopy = {(x, z) for x in range(-7, 7) for z in range(ZF + 1, ZF + 8)}
 pack_area(m, canopy, 21, PLATES2D, prefer='x', colorfn=lambda x, z: WHITE)
 pack_area(m, canopy, 22, PLATES2D, prefer='z', colorfn=lambda x, z: WHITE)
-lay_run(m, 'z', ('pc', -1), 44, [DBG] * 7, 23, SLOPE18, width_axis_min=-7, face='-x')
-lay_run(m, 'z', ('pc', 1), 44, [DBG] * 7, 23, SLOPE18, width_axis_min=3, face='+x')
+lay_run(m, 'z', ('pc', -1), ZF + 1, [DBG] * 7, 23, SLOPE18, width_axis_min=-7, face='-x')
+lay_run(m, 'z', ('pc', 1), ZF + 1, [DBG] * 7, 23, SLOPE18, width_axis_min=3, face='+x')
 for x in range(-3, 3):
-    lay_run(m, 'z', x, 44, [WHITE] * 7, 23, BRICK1)
-lay_run(m, 'z', ('pc2', -1), 44, [DBG] * 7, 26, SLOPE18, width_axis_min=-4, face='-x')
-lay_run(m, 'z', ('pc2', 1), 44, [DBG] * 7, 26, SLOPE18, width_axis_min=0, face='+x')
-pack_area(m, {(x, z) for x in (-1, 0) for z in range(44, 51)}, 29, TILES2D, prefer='z', colorfn=lambda x, z: DBG)
+    lay_run(m, 'z', x, ZF + 1, [WHITE] * 7, 23, BRICK1)
+lay_run(m, 'z', ('pc2', -1), ZF + 1, [DBG] * 7, 26, SLOPE18, width_axis_min=-4, face='-x')
+lay_run(m, 'z', ('pc2', 1), ZF + 1, [DBG] * 7, 26, SLOPE18, width_axis_min=0, face='+x')
+pack_area(m, {(x, z) for x in (-1, 0) for z in range(ZF + 1, ZF + 8)}, 29, TILES2D, prefer='z', colorfn=lambda x, z: DBG)
 
 # ================================================================== 9 roof modules
 def module(z0, z1, name, order, organ=False, cross=False, mult=1, title=None):
@@ -414,7 +439,7 @@ def module(z0, z1, name, order, organ=False, cross=False, mult=1, title=None):
                 if k <= 20:
                     x0 = 20 - k if sd > 0 else -(22 - k)
                     def ic(z):
-                        if organ and 3 <= k <= 11 and -40 <= z < -31: return BLACK
+                        if organ and 3 <= k <= 11 and z0 + 3 <= z < z1 - 3: return BLACK
                         return MN
                     lay_run(m, 'z', ('inv', name, sd, k), z0, [ic(z) for z in range(z0, z1)], h, INV45,
                             width_axis_min=x0, face='-x' if sd > 0 else '+x')
@@ -441,26 +466,26 @@ def lay_run_ridge(z0, cols, h, name):
     for i, L, col in pieces:
         m.place(RIDGE[L], col, -1, z0 + i, h, r=1)
 
-module(*MODULES[0], 'roof_rear', 0, organ=True, title='Rear roof module (over the chancel)')
+module(*MODULES[0], 'roof_rear', 0, title='Rear roof module (behind the reredos rib)')
+module(*MODULES[1], 'roof_organ', 1, organ=True, title='Roof module over the altar, with organ grilles')
 mid0 = len(m.parts)
-module(*MODULES[1], 'roof_mid', 1, mult=5, title='Middle roof module (build 5)')
+module(*MID_MODS[0], 'roof_mid', 2, mult=len(MID_MODS), title='Middle roof module (build %d)' % len(MID_MODS))
 mid1 = len(m.parts)
-# copy the middle module to the other four bays
-for bi, (z0, z1) in enumerate(MODULES[2:6]):
-    dz = z0 - MODULES[1][0]
+for bi, (z0, z1) in enumerate(MID_MODS[1:]):     # copy the middle module to the other bays
+    dz = z0 - MID_MODS[0][0]
     for p in m.parts[mid0:mid1]:
         m.step = p['step']; m.sub = 'roof_mid'
         i = m.place(p['pid'], p['color'], p['x0'], p['z0'] + dz, p['h0'], p['r'])
         m.parts[i]['copy_of'] = bi + 1
-module(*MODULES[6], 'roof_front', 2, cross=True, title='Front roof module (over the loft)')
+module(*MODULES[-1], 'roof_front', 3, cross=True, title='Front roof module with the cross')
 
 # ================================================================== floor tiles (shown early)
 step((1, 4), 'Floor tiles', 'base')
 tiles = set()
 for x in range(-28, 28):
-    for z in range(-42, 42):
+    for z in range(ZRD, ZFI):
         if m.free(x, z, 0): tiles.add((x, z))
-porch_t = {(x, z) for x in range(-7, 7) for z in range(44, 51) if m.free(x, z, 0)}
+porch_t = {(x, z) for x in range(-7, 7) for z in range(ZF + 1, ZF + 8) if m.free(x, z, 0)}
 def tcol(x, z):
     if -3 <= x < 3 and -24 <= z < 33: return DBG
     return LBG
