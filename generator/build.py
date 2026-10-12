@@ -436,7 +436,7 @@ lay_run(m, 'z', ('pc2', 1), ZF + 1, [DBG] * 7, 26, SLOPE18, width_axis_min=0, fa
 pack_area(m, {(x, z) for x in (-1, 0) for z in range(ZF + 1, ZF + 8)}, 29, TILES2D, prefer='z', colorfn=lambda x, z: DBG)
 
 # ================================================================== 9 roof modules
-LANTERN_LAYERS = (2, 9)                   # ceiling layers the outer and inner lanterns hang from
+LANTERN_LAYERS = (9,)                     # ceiling layer the lanterns hang from, about midway up the slope
 def module(z0, z1, name, order, organ=False, cross=False, mult=1, title=None, split=False):
     """split: left half stays as part of the fixed roof; the right half (+ centre, top course
     and ridge) is a lid that lifts straight off. Nothing fixed sits on top of the lid."""
@@ -531,8 +531,8 @@ def lantern(x, z, ceil, double):
     for i in range(len(chain) - 1): m.parts[chain[i + 1]]['link'] = chain[i]
     m.parts[top]['link'] = chain[-1]
 for z in LANTERN_BAYS:
-    for j, double in zip(LANTERN_LAYERS, (False, True)):
-        lantern(j - 21, z, layer_h(j), double)   # outer row lower, inner row higher up the slope
+    for j in LANTERN_LAYERS:
+        lantern(j - 21, z, layer_h(j), True)     # one per bay, on a long two-part rod
 
 # ================================================================== floor tiles (shown early)
 step((1, 4), 'Floor tiles', 'base')
