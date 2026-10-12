@@ -10,7 +10,7 @@ from core import *
 RIBS = [-28, -16, -4, 8, 20, 32]            # rib column z (1 stud thick)
 WIN = [-36, -23, -11, 1, 13, 25]            # side window units, 3 wide (glass|white|glass)
 POSTS_Z = RIBS + [41]                       # extra post under the loft against the front wall
-MODULES = [(-45, -28), (-28, -16), (-16, -4), (-4, 8), (8, 20), (20, 32), (32, 47)]
+MODULES = [(-45, -28), (-28, -16), (-16, -4), (-4, 8), (8, 20), (20, 32), (32, 45)]
 K = 41                                       # roof break (plates)
 def layer_h(k): return K + 3 * (k - 1)        # bottom of steep-roof layer k
 PEW_SEATS = [-20 + 3 * i for i in range(17)]
@@ -278,10 +278,10 @@ def slab_cells():
     for sd in (1, -1):
         for xx in range(20, 32):
             x = xx if sd > 0 else -xx - 1
-            zr = range(-44, 44) if xx >= 22 else range(-42, 42)
+            zr = range(-44, 45) if xx >= 22 else range(-42, 42)
             for z in zr: out.add((x, z))
     return out
-def slab_col(x, z): return WHITE if z in (43, -44) and abs(x + 0.5) < 30 else MN
+def slab_col(x, z): return WHITE if z in (43, 44, -44) and abs(x + 0.5) < 30 else MN
 sc = slab_cells()
 pack_area(m, sc, 30, PLATES2D, prefer='x', colorfn=slab_col)
 step((4, 4), 'Aisle ceilings (upper plate layer)', 'loft')
@@ -317,14 +317,15 @@ for ci, h in enumerate((32, 35, 38)):
         # aisle roof stair: one course of 18-degree slopes plus fill behind it
         lo, hi = [(28, 32), (25, 29), (22, 26)][ci]
         x0 = lo if sd > 0 else -hi
-        lay_run(m, 'z', ('a18', sd, ci), -44, [DBG] * 88, h, SLOPE18, width_axis_min=x0, face='+x' if sd > 0 else '-x')
+        lay_run(m, 'z', ('a18', sd, ci), -44, [DBG] * 89, h, SLOPE18, width_axis_min=x0, face='+x' if sd > 0 else '-x')
         fill = range(22, lo) if sd > 0 else range(-lo, -22)
         for x in fill:
             def fc(z):
-                if z in (42, 43): return mosaic('afill', x, z, h)
+                if z == 44: return WHITE          # end of the 1-stud aisle-roof overhang
+                if z in (42, 43): return LBG
                 if z in (-44, -43): return WHITE
                 return LBG
-            lay_run(m, 'z', x, -44, [fc(z) for z in range(-44, 44)], h, trans_or_brick)
+            lay_run(m, 'z', x, -44, [fc(z) for z in range(-44, 45)], h, trans_or_brick)
 
 # ================================================================== 7 gables (front, rear + reredos)
 def gable_band(side, h, hp, xs, k=None, table=None):
