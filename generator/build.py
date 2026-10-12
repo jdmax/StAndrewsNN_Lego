@@ -270,10 +270,11 @@ for c in range(10):
     if c == 0: door(29, CHAPEL[0], rf=1, color_door=WHITE)      # chapel door, opening outward
     ring_course(c, 'right')
     step((3, c * 5 + 4), 'Course %d: posts and inner walls' % (c + 1), 'walls')
-    if c < 9:
-        for z in POSTS_Z:
+    for z in POSTS_Z:                                   # posts run up to the aisle ceiling (no beam in the nave)
+        if c < 9 or z >= -28:
             for x0 in (20, -22):
                 m.place('3004', RB, x0, z, h0, r=0)
+    if c < 9:
         for x0 in (20, -22):                                   # chancel side walls (white, 2 wide)
             lay_run(m, 'z', ('chw', x0), ZRD, [None if z in RIBS else WHITE for z in range(ZRD, -28)], h0, BRICK2, width_axis_min=x0)
     # cross walls at the end of each aisle, doors into the ambulatory
@@ -309,18 +310,20 @@ for x0 in list(range(-20, 20, 4)) + [23, -27]:
     m.place('30055', RB, x0, 33, 23, r=0)
 step((4, 2), 'Arcade beams', 'loft')
 for x0 in (20, -22):
-    lay_run(m, 'z', ('beam', x0), ZRD, [RB] * (ZFI - ZRD), 27, BRICK2, width_axis_min=x0)
+    lay_run(m, 'z', ('beam', x0), ZRD, [None if z in RIBS else WHITE for z in range(ZRD, -28)], 27, BRICK2, width_axis_min=x0)   # chancel walls only
 step((4, 3), 'Aisle ceilings (lower plate layer)', 'loft')
 def slab_cells():
     out = set()
     for sd in (1, -1):
-        for xx in range(20, 32):
+        for xx in range(20, 33):
             x = xx if sd > 0 else -xx - 1
-            zr = range(ZR, ZF + 1) if xx >= 22 else range(ZRD, ZFI)
+            # under the rib line only at the ribs (post caps) and over the chancel walls
+            zr = range(ZR, ZF + 1) if xx >= 22 else [z for z in range(ZRD, ZFI) if z in RIBS or z < -28]
             for z in zr: out.add((x, z))
     return out
 def slab_col(x, z):
-    if z == ZF and abs(x + 0.5) < 30: return mosaic('slab', x, z)   # glass carries on up to the aisle roof
+    if z == ZF and abs(x + 0.5) < 30: return mosaic('slab', x, z)
+    if abs(x + 0.5) < 22: return RB                                  # post caps   # glass carries on up to the aisle roof
     return WHITE if z == ZR and abs(x + 0.5) < 30 else MN
 sc = slab_cells()
 pack_area(m, sc, 30, PLATES2D, prefer='x', colorfn=slab_col)
@@ -356,13 +359,11 @@ for ci, h in enumerate((32, 35, 38)):
     for sd in (1, -1):
         xa, xb = (20, 21) if sd > 0 else (-21, -22)
         xmin = 20 if sd > 0 else -22
-        both = [MN if (m.free(xa, z, h) and m.free(xb, z, h)) else None for z in range(ZRD, ZFI)]
-        lay_run(m, 'z', ('knee', sd), ZRD, both, h, BRICK2, width_axis_min=xmin)
-        for x in (xa, xb):
-            single = [MN if m.free(x, z, h) else None for z in range(ZRD, ZFI)]
+        for x in (xa, xb):                               # rib outer corner only; open between ribs
+            single = [RB if (z in RIBS and m.free(x, z, h)) else None for z in range(ZRD, ZFI)]
             lay_run(m, 'z', x, ZRD, single, h, BRICK1)
         # aisle roof stair: one course of 18-degree slopes plus fill behind it
-        lo, hi = [(28, 32), (25, 29), (22, 26)][ci]
+        lo, hi = [(29, 33), (26, 30), (23, 27)][ci]   # set back one stud behind the rib line
         x0 = lo if sd > 0 else -hi
         lay_run(m, 'z', ('a18', sd), ZR, [DBG] * (ZF + 2 - ZR), h, SLOPE18, width_axis_min=x0, face='+x' if sd > 0 else '-x', forbid={ZF + 1})
         fill = range(22, lo) if sd > 0 else range(-lo, -22)
@@ -370,7 +371,7 @@ for ci, h in enumerate((32, 35, 38)):
             def fc(z):
                 if z in (ZFI, ZF): return mosaic('afill', x, z, h)
                 if z in (ZR, ZRI): return WHITE
-                return LBG
+                return MN if abs(x + 0.5) < 23 else LBG     # wood face seen behind the ribs
             lay_run(m, 'z', x, ZR, [fc(z) for z in range(ZR, ZF + 1)], h, trans_or_brick)
 
 # ================================================================== 7 gables (front, rear + reredos)
