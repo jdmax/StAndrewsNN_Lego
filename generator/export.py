@@ -6,13 +6,15 @@ from ldlib import bbox
 
 SECTIONS = {1: 'Base and floor', 2: 'Interior', 3: 'Walls', 4: 'Loft and aisle ceilings', 5: 'Ribs',
             6: 'Aisle roofs', 7: 'Gables', 8: 'Porch', 9: 'Roof modules'}
-SUBS = ['base', 'interior', 'walls', 'loft', 'ribs', 'aisles', 'gables', 'porch', 'roof_rear', 'roof_organ', 'roof_mid', 'roof_front']
+SUBS = ['base', 'interior', 'walls', 'loft', 'ribs', 'aisles', 'gables', 'porch', 'roof_rear', 'roof_organ', 'roof_organ_lid', 'roof_mid', 'roof_mid_lid', 'roof_front']
 SUB_TITLE = {'base': 'Baseplates, chancel platform and floor', 'interior': 'Pews and chancel furniture',
              'walls': 'Walls, posts and doors', 'loft': 'Choir loft, arcade beams and aisle ceilings',
              'ribs': 'Glulam ribs', 'aisles': 'Knee walls and aisle roofs', 'gables': 'Front and rear gables, reredos',
              'porch': 'Entrance porch', 'roof_rear': 'Rear roof module (fixed)',
-             'roof_organ': 'Roof module over the altar with organ grilles (lift-off)',
-             'roof_mid': 'Middle roof module (build %d, lift-off)' % len(MID_MODS), 'roof_front': 'Front roof module (fixed) with cross'}
+             'roof_organ': 'Roof bay over the altar with organ grilles, fixed left side',
+             'roof_organ_lid': 'Roof bay over the altar, lift-off right side',
+             'roof_mid_lid': 'Middle roof bay, lift-off right side (build %d)' % len(MID_MODS),
+             'roof_mid': 'Middle roof bay, fixed left side (build %d)' % len(MID_MODS), 'roof_front': 'Front roof module (fixed) with cross'}
 
 order = sorted(STEPS, key=lambda s: STEPS[s]['order'])
 sidx = {s: i for i, s in enumerate(order)}
@@ -29,10 +31,10 @@ def write_mpd(path):
     L += ['0 FILE st_andrews_nave.ldr', "0 St. Andrew's Episcopal Church, Newport News - minifig-scale nave",
           '0 Name: st_andrews_nave.ldr', "0 Author: St. Andrew's LEGO project (generated)", '0 !LDRAW_ORG Unofficial_Model', '']
     for sub in SUBS:
-        if sub == 'roof_mid':
+        if sub in ('roof_mid', 'roof_mid_lid'):
             for i, (a, b) in enumerate(MID_MODS):
                 dz = a - MID_MODS[0][0]
-                L.append('1 16 0 0 %d 1 0 0 0 1 0 0 0 1 roof_mid.ldr' % (-20 * dz))
+                L.append('1 16 0 0 %d 1 0 0 0 1 0 0 0 1 %s.ldr' % (-20 * dz, sub))
         else:
             L.append('1 16 0 0 0 1 0 0 0 1 0 0 0 1 %s.ldr' % sub)
         L.append('0 STEP')
@@ -104,7 +106,7 @@ def viewer_data():
     parts, pr, st = [], [], []
     r1 = lambda v: round(float(v), 2)
     for i, p in enumerate(m.parts):
-        parts.append([pidx[p['pid']], cidx[p['color']], sidx[p['step']], module_of(p)])
+        parts.append([pidx[p['pid']], cidx[p['color']], sidx[p['step']], module_of(p), 1 if p['sub'].endswith('_lid') else 0])
         for q in prims(p): pr.append([i, q[0]] + [r1(v) for v in q[1:7]] + [q[7]])
     # studs with the step at which they get covered (then hidden)
     bottoms = {}

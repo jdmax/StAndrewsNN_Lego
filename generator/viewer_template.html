@@ -100,8 +100,9 @@ td.p{font:11.5px var(--mono);color:var(--muted)}
       <div class="toolbar">
         <div class="seg" role="group" aria-label="Roof">
           <button data-roof="on" aria-pressed="false">Roof on</button>
-          <button data-roof="lift" aria-pressed="true">Lift middle</button>
-          <button data-roof="off" aria-pressed="false">Roof off</button>
+          <button data-roof="lift" aria-pressed="true">Lift right</button>
+          <button data-roof="open" aria-pressed="false">Right off</button>
+          <button data-roof="off" aria-pressed="false">No roof</button>
         </div>
         <label class="cut" for="cut">Cut at <input id="cut" type="range" min="2" max="120" value="120"><span id="cutv">—</span></label>
         <div class="seg" role="group" aria-label="View">
@@ -148,7 +149,7 @@ td.p{font:11.5px var(--mono);color:var(--muted)}
             <ul>
               <li>Walls are two bricks thick: tan brick outside, white plaster inside, with a clear clerestory band on top.</li>
               <li>The steep roof is a stair of dark grey 45° slopes backed by medium nougat inverted slopes, so the underside reads as the wood ceiling.</li>
-              <li>Nine ribs divide the roof into ten modules. The eight between ribs lift straight off the knee walls to show the interior; seven of them are identical.</li>
+              <li>Nine ribs divide the roof into bays. In the eight bays between ribs, the right-hand side of the roof (seen from the street) is a lid that lifts straight off, carrying the ridge with it. The left side stays fixed, so the ceiling keeps its full length on that side for hanging lanterns. Seven of the bays are identical.</li>
               <li>Ribs are reddish brown slope stairs standing on the arcade posts, one stud thick, with a small gap below the ceiling so the roof lifts freely.</li>
               <li>The aisles have a flat medium nougat ceiling at the top of the glass band; the low aisle roofs are fixed.</li>
             </ul>
@@ -242,8 +243,8 @@ const groups = new Map();
 const tmpC = new THREE.Color();
 const stepBox = Array.from({length:NS}, () => new THREE.Box3());
 for (const pr of D.prims){
-  const p = D.parts[pr[0]], s = p[2], mod = p[3], key = s*16 + (mod+1);
-  if (!groups.has(key)) groups.set(key, {s, mod, o:{pos:[],nor:[],col:[],edg:[]}, t:{pos:[],nor:[],col:[],edg:[]}});
+  const p = D.parts[pr[0]], s = p[2], mod = p[3], lid = p[4], key = (s*16 + (mod+1))*2 + lid;
+  if (!groups.has(key)) groups.set(key, {s, mod, lid, o:{pos:[],nor:[],col:[],edg:[]}, t:{pos:[],nor:[],col:[],edg:[]}});
   const g = groups.get(key), tr = colTrans[p[1]];
   tmpC.setStyle(colHex[p[1]]);
   addPrim(tr ? g.t : g.o, pr, tmpC);
@@ -278,18 +279,19 @@ grid.scale.set(64/128, 1, 1); grid.position.set(0, 0.01, 4); scene.add(grid);
 // ---------------------------------------------------------------- state
 let cur = NS - 1, roof = 'lift', cutH = 999;
 const LIFT = 16;
-function modY(mod){ return (roof === 'lift' && mod >= 1 && mod <= D.modules.length - 2) ? LIFT : 0; }
-function modVisible(mod){ return !(roof === 'off' && mod >= 0); }
+function modY(mod, lid){ return (roof === 'lift' && lid) ? LIFT : 0; }
+function modX(mod, lid){ return (roof === 'lift' && lid) ? 14 : 0; }
+function modVisible(mod, lid){ return !((roof === 'off' && mod >= 0) || (roof === 'open' && lid)); }
 const M4 = new THREE.Matrix4();
 function apply(){
   for (const g of G){
-    g.root.visible = g.s <= cur && modVisible(g.mod);
-    g.root.position.y = modY(g.mod);
+    g.root.visible = g.s <= cur && modVisible(g.mod, g.lid);
+    g.root.position.y = modY(g.mod, g.lid); g.root.position.x = modX(g.mod, g.lid);
     for (const e of g.edges) e.material = (g.s === cur) ? matH : matE;
   }
   D.studs.forEach((s, i) => {
-    const p = D.parts[s[0]], vis = p[2] <= cur && s[4] > cur && modVisible(p[3]);
-    if (vis) M4.makeTranslation(s[1]/2, s[2]*PL + modY(p[3]), s[3]/2); else M4.makeScale(0, 0, 0);
+    const p = D.parts[s[0]], vis = p[2] <= cur && s[4] > cur && modVisible(p[3], p[4]);
+    if (vis) M4.makeTranslation(s[1]/2 + modX(p[3], p[4]), s[2]*PL + modY(p[3], p[4]), s[3]/2); else M4.makeScale(0, 0, 0);
     studs.setMatrixAt(i, M4);
   });
   studs.instanceMatrix.needsUpdate = true;
@@ -351,7 +353,7 @@ let tween = null;
 function setView(v){ const [p, t] = views[v]; tween = {p:new THREE.Vector3(...p), t:new THREE.Vector3(...t), k:0}; }
 function focusStep(){
   const b = stepBox[cur]; if (b.isEmpty()) return;
-  const c = b.getCenter(new THREE.Vector3()); c.y += modY(D.parts.find(p => p[2] === cur)?.[3] ?? -1);
+  const c = b.getCenter(new THREE.Vector3()); { const q = D.parts.find(p => p[2] === cur); if (q){ c.y += modY(q[3], q[4]); c.x += modX(q[3], q[4]); } }
   const off = camera.position.clone().sub(controls.target);
   tween = {p:c.clone().add(off), t:c, k:0};
 }

@@ -357,7 +357,7 @@ for ci, h in enumerate((32, 35, 38)):
         # aisle roof stair: one course of 18-degree slopes plus fill behind it
         lo, hi = [(28, 32), (25, 29), (22, 26)][ci]
         x0 = lo if sd > 0 else -hi
-        lay_run(m, 'z', ('a18', sd, ci), ZR, [DBG] * (ZF + 2 - ZR), h, SLOPE18, width_axis_min=x0, face='+x' if sd > 0 else '-x', forbid={ZF + 1})
+        lay_run(m, 'z', ('a18', sd), ZR, [DBG] * (ZF + 2 - ZR), h, SLOPE18, width_axis_min=x0, face='+x' if sd > 0 else '-x', forbid={ZF + 1})
         fill = range(22, lo) if sd > 0 else range(-lo, -22)
         for x in fill:
             def fc(z):
@@ -426,32 +426,47 @@ lay_run(m, 'z', ('pc2', 1), ZF + 1, [DBG] * 7, 26, SLOPE18, width_axis_min=0, fa
 pack_area(m, {(x, z) for x in (-1, 0) for z in range(ZF + 1, ZF + 8)}, 29, TILES2D, prefer='z', colorfn=lambda x, z: DBG)
 
 # ================================================================== 9 roof modules
-def module(z0, z1, name, order, organ=False, cross=False, mult=1, title=None):
+def module(z0, z1, name, order, organ=False, cross=False, mult=1, title=None, split=False):
+    """split: left half stays as part of the fixed roof; the right half (+ centre, top course
+    and ridge) is a lid that lifts straight off. Nothing fixed sits on top of the lid."""
     n = z1 - z0
+    def ic(z, k):
+        return BLACK if organ and 3 <= k <= 11 and z0 + 3 <= z < z1 - 3 else MN
+    def reg(k, sd):
+        x0 = 22 - k if sd > 0 else -(24 - k)
+        lay_run(m, 'z', ('roof', name, sd), z0, [DBG] * n, layer_h(k), SLOPE45,
+                width_axis_min=x0, face='+x' if sd > 0 else '-x')
+    def inv(k, sd):
+        x0 = 20 - k if sd > 0 else -(22 - k)
+        lay_run(m, 'z', ('roof', name, sd), z0, [ic(z, k) for z in range(z0, z1)], layer_h(k), INV45,
+                width_axis_min=x0, face='-x' if sd > 0 else '+x')
+    def top(k):
+        if k == 21: lay_run(m, 'z', ('ctr', name), z0, [MN] * n, layer_h(k), BRICK2, width_axis_min=-1)
+        if k == 23:
+            zz = z1 - 1 if cross else z1
+            lay_run_ridge(z0, [DBG] * (zz - z0), layer_h(k), name)
     groups = [(1, 3), (4, 6), (7, 9), (10, 12), (13, 15), (16, 18), (19, 21), (22, 23)]
-    for gi, (ka, kb) in enumerate(groups):
-        step((9, order, gi), '%s: layers %d-%d' % (title or name, ka, kb), name, mult)
-        for k in range(ka, kb + 1):
-            h = layer_h(k)
-            for sd in (1, -1):
-                if k <= 22:
-                    x0 = 22 - k if sd > 0 else -(24 - k)
-                    lay_run(m, 'z', ('reg', name, sd, k), z0, [DBG] * n, h, SLOPE45,
-                            width_axis_min=x0, face='+x' if sd > 0 else '-x')
-                if k <= 20:
-                    x0 = 20 - k if sd > 0 else -(22 - k)
-                    def ic(z):
-                        if organ and 3 <= k <= 11 and z0 + 3 <= z < z1 - 3: return BLACK
-                        return MN
-                    lay_run(m, 'z', ('inv', name, sd, k), z0, [ic(z) for z in range(z0, z1)], h, INV45,
-                            width_axis_min=x0, face='-x' if sd > 0 else '+x')
-            if k == 21:
-                lay_run(m, 'z', ('ctr', name), z0, [MN] * n, h, BRICK2, width_axis_min=-1)
-            if k == 23:
-                zz = z1 - 1 if cross else z1
-                cols = [DBG] * (zz - z0)
-                cells = [(z0 + i, c) for i, c in enumerate(cols)]
-                lay_run_ridge(z0, cols, h, name)
+    if not split:
+        for gi, (ka, kb) in enumerate(groups):
+            step((9, order, gi), '%s: layers %d-%d' % (title or name, ka, kb), name, mult)
+            for k in range(ka, kb + 1):
+                for sd in (1, -1):
+                    if k <= 22: reg(k, sd)
+                    if k <= 20: inv(k, sd)
+                top(k)
+    else:
+        for gi, (ka, kb) in enumerate(groups[:-1]):
+            step((9, order, gi), '%s, fixed left side: layers %d-%d' % (title or name, ka, kb), name, mult)
+            for k in range(ka, kb + 1):
+                reg(k, -1)
+                if k <= 20: inv(k, -1)
+        for gi, (ka, kb) in enumerate(groups):
+            step((9, order, 10 + gi), '%s, lift-off right side: layers %d-%d' % (title or name, ka, kb), name + '_lid', mult)
+            for k in range(ka, kb + 1):
+                if k <= 22: reg(k, 1)
+                if k <= 20: inv(k, 1)
+                if k == 22: reg(k, -1)
+                top(k)
     if cross:
         step((9, order, 9), 'Cross on the front gable', name, 1)
         hc = layer_h(23)
@@ -469,14 +484,14 @@ def lay_run_ridge(z0, cols, h, name):
         m.place(RIDGE[L], col, -1, z0 + i, h, r=1)
 
 module(*MODULES[0], 'roof_rear', 0, title='Rear roof module (behind the reredos rib)')
-module(*MODULES[1], 'roof_organ', 1, organ=True, title='Roof module over the altar, with organ grilles')
+module(*MODULES[1], 'roof_organ', 1, organ=True, split=True, title='Roof bay over the altar, with organ grilles')
 mid0 = len(m.parts)
-module(*MID_MODS[0], 'roof_mid', 2, mult=len(MID_MODS), title='Middle roof module (build %d)' % len(MID_MODS))
+module(*MID_MODS[0], 'roof_mid', 2, mult=len(MID_MODS), split=True, title='Middle roof bay (build %d)' % len(MID_MODS))
 mid1 = len(m.parts)
 for bi, (z0, z1) in enumerate(MID_MODS[1:]):     # copy the middle module to the other bays
     dz = z0 - MID_MODS[0][0]
     for p in m.parts[mid0:mid1]:
-        m.step = p['step']; m.sub = 'roof_mid'
+        m.step = p['step']; m.sub = p['sub']
         i = m.place(p['pid'], p['color'], p['x0'], p['z0'] + dz, p['h0'], p['r'])
         m.parts[i]['copy_of'] = bi + 1
 module(*MODULES[-1], 'roof_front', 3, cross=True, title='Front roof module with the cross')
