@@ -60,14 +60,16 @@ def front_feature(x, h):
 def gable_color(side, skin, x, h, k=None):
     """|x| < 22 above the brick wall. side front/rear, skin outer/inner."""
     if side == 'front':
+        # rake glass runs the full length of both roof edges, right up to the apex
+        if k is not None and k >= 1:
+            lim = 20 - k
+            if x in (lim - 1, lim - 2, lim - 3, -lim, -lim + 1, -lim + 2): return mosaic('rake', x, h)
         f = front_feature(x, h)
         if h >= 30 and h < 32 and -4 <= x < 4: return WHITE if skin == 'outer' else MN
         if f is not None:
             if skin == 'outer' or f in (TDB, TLB, TRED, TYEL): return f
-            return MN
-        if k is not None and k >= 1:
-            lim = 20 - k
-            if x in (lim - 1, lim - 2, -lim, -lim + 1): return mosaic('rake', x, h)
+            if x in (-4, 3): return MN            # no white frames inside, glass meets the wood
+            return WHITE if f == WHITE else LBG   # grey panel with the white cross, as seen from the nave
         return SB if skin == 'outer' else MN
     else:
         rose = rose_cell(x, h)

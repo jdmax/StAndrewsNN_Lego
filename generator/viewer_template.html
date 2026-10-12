@@ -105,7 +105,7 @@ td.p{font:11.5px var(--mono);color:var(--muted)}
         </div>
         <label class="cut" for="cut">Cut at <input id="cut" type="range" min="2" max="120" value="120"><span id="cutv">—</span></label>
         <div class="seg" role="group" aria-label="View">
-          <button data-view="front">Front</button><button data-view="side">Side</button><button data-view="above">Above</button><button data-view="inside">Inside</button>
+          <button data-view="front">Front</button><button data-view="side">Side</button><button data-view="above">Above</button><button data-view="inside">Altar</button><button data-view="loft">Loft</button>
         </div>
       </div>
       <div class="nav">
@@ -346,7 +346,7 @@ function buildBom(){
 }
 
 // ---------------------------------------------------------------- camera
-const views = {front:[[-38, 46, 150],[0, 18, 0]], side:[[150, 40, 8],[0, 16, 2]], above:[[-95, 120, 110],[0, 8, 2]], inside:[[0, 10, 27],[0, 12, -40]]};
+const views = {front:[[-38, 46, 150],[0, 18, 0]], side:[[150, 40, 8],[0, 16, 2]], above:[[-95, 120, 110],[0, 8, 2]], inside:[[0, 10, 27],[0, 12, -40]], loft:[[0, 5, -20],[0, 22, 44]]};
 let tween = null;
 function setView(v){ const [p, t] = views[v]; tween = {p:new THREE.Vector3(...p), t:new THREE.Vector3(...t), k:0}; }
 function focusStep(){
