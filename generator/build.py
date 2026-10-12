@@ -89,23 +89,29 @@ def cross_hole(x, h):
     if x in (-5, -4, 3, 4) and 65 <= h < 71: return True
     return False
 
+def clerestory(z, c):
+    if abs(z) >= 43: return TCLR                       # corners
+    o = z % 4
+    if o == 0: return WHITE                            # mullion
+    if o == 2: return [TRED, TGRN, TDB, TYEL][(z // 4) % 4]   # diamond medallion
+    return TLB if c == 9 else TCLR
+
 def wall_color(skin, side, x, z, c):
     h = 3 * c
     if side in ('left', 'right'):
         chapel = side == 'right' and c <= 5            # chapel door near the front corner
+        if c >= 8: return clerestory(z, c)
         if skin == 'outer':
-            if c >= 8: return TCLR
             if chapel and 39 <= z < 43: return None       # door frame
-            w = window_at(z) or ((6, z - 36) if side == 'right' and 36 <= z < 39 else None)
+            w = window_at(z) or ((6, z - 36) if 36 <= z < 39 else None)
             if w and abs(z) < 43:
                 wi, o = w
                 if c in (0, 7) or o == 1: return WHITE
                 return PANE[c] if wi % 2 == 0 else [None, TDB, TDB, TLB, TDB, TRED, TDB][c]
             return TAN
         else:
-            if c >= 8: return TCLR
             if chapel and 39 <= z < 42: return None
-            w = window_at(z) or ((6, z - 36) if side == 'right' and 36 <= z < 39 else None)
+            w = window_at(z) or ((6, z - 36) if 36 <= z < 39 else None)
             if w and 1 <= c <= 6 and abs(z) < 42: return None
             return WHITE
     ax = abs(x + 0.5)

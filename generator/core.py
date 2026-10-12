@@ -24,9 +24,10 @@ COLORS = {  # ldraw code: (name, viewer hex, bricklink id, transparent)
     43: ('Trans-Light Blue', '#aee9ef', 15, True),
     46: ('Trans-Yellow', '#f5cd2f', 19, True),
     47: ('Trans-Clear', '#e8f2f4', 12, True),
+    34: ('Trans-Green', '#5fa86c', 20, True),
 }
 WHITE, TAN, RB, LBG, DBG, MN, SB, BLACK, GREEN = 15, 19, 70, 71, 72, 84, 379, 0, 2
-TDB, TRED, TLB, TYEL, TCLR = 33, 36, 43, 46, 47
+TDB, TRED, TLB, TYEL, TCLR, TGRN = 33, 36, 43, 46, 47, 34
 
 # ---------------------------------------------------------------- parts
 # kind: box | tile | slope | slope18 | inv | dbl | fence | grille | jumper | doorframe | door
