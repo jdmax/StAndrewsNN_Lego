@@ -330,15 +330,22 @@ pack_area(m, sc, 31, PLATES2D, prefer='z', colorfn=slab_col)
 # ================================================================== 5 ribs
 step((5, 0), 'Glulam ribs', 'ribs')
 def rib(z):
-    for sd in (1, -1):
-        fx = (lambda a, b: (a, b)) if sd > 0 else (lambda a, b: (-b, -a))
-        out, inn = ('+x', '-x') if sd > 0 else ('-x', '+x')
-        for k in range(-2, 19):
-            x0, _ = fx(18 - k, 20 - k)
-            m.place('3040b', RB, x0, z, layer_h(k), r=FACE_R[out])
-            if k <= 16:
-                x0, _ = fx(16 - k, 18 - k)
-                m.place('3665a', RB, x0, z, layer_h(k), r=FACE_R[inn])
+    """Right half: slope stair standing just clear of the lift-off roof.
+    Left half: solid from the inverted-slope underside up to the roof surface, so the fixed
+    roof slopes clutch straight onto it."""
+    for k in range(-2, 19):                       # right half (and lower part of the left)
+        m.place('3040b', RB, 18 - k, z, layer_h(k), r=FACE_R['+x'])
+        if k <= 16: m.place('3665a', RB, 16 - k, z, layer_h(k), r=FACE_R['-x'])
+        if k <= 0:
+            m.place('3040b', RB, -(20 - k), z, layer_h(k), r=FACE_R['-x'])
+            m.place('3665a', RB, -(18 - k), z, layer_h(k), r=FACE_R['+x'])
+    for k in range(1, 21):                        # left half, solid to the roof
+        a, b = -(22 - k), min(-(18 - k), 0)
+        if k == 19: b = -1                        # leave room for the rib's ridge cap
+        cols = [RB] * (b - a)
+        for i, L, col in dp_partition(cols, set(BRICK1.keys())):
+            m.place(BRICK1[L], RB, a + i, z, layer_h(k), r=0)
+        if k <= 16: m.place('3665a', RB, -(18 - k), z, layer_h(k), r=FACE_R['+x'])
     m.place('3004', RB, -1, z, layer_h(17), r=0)
     m.place('3044b', RB, -1, z, layer_h(19), r=1)
 for z in RIBS: rib(z)
@@ -438,7 +445,8 @@ def module(z0, z1, name, order, organ=False, cross=False, mult=1, title=None, sp
                 width_axis_min=x0, face='+x' if sd > 0 else '-x')
     def inv(k, sd):
         x0 = 20 - k if sd > 0 else -(22 - k)
-        lay_run(m, 'z', ('roof', name, sd), z0, [ic(z, k) for z in range(z0, z1)], layer_h(k), INV45,
+        cols = [None if (sd < 0 and z in RIBS) else ic(z, k) for z in range(z0, z1)]   # rib takes the slot on the left
+        lay_run(m, 'z', ('roof', name, sd), z0, cols, layer_h(k), INV45,
                 width_axis_min=x0, face='-x' if sd > 0 else '+x')
     def top(k):
         if k == 21: lay_run(m, 'z', ('ctr', name), z0, [MN] * n, layer_h(k), BRICK2, width_axis_min=-1)
