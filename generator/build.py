@@ -315,7 +315,7 @@ step((4, 3), 'Aisle ceilings (lower plate layer)', 'loft')
 def slab_cells():
     out = set()
     for sd in (1, -1):
-        for xx in range(20, 33):
+        for xx in range(20, 32):
             x = xx if sd > 0 else -xx - 1
             # under the rib line only at the ribs (post caps) and over the chancel walls
             zr = range(ZR, ZF + 1) if xx >= 22 else [z for z in range(ZRD, ZFI) if z in RIBS or z < -28]
@@ -360,10 +360,12 @@ for ci, h in enumerate((32, 35, 38)):
         xa, xb = (20, 21) if sd > 0 else (-21, -22)
         xmin = 20 if sd > 0 else -22
         for x in (xa, xb):                               # rib outer corner only; open between ribs
-            single = [RB if (z in RIBS and m.free(x, z, h)) else None for z in range(ZRD, ZFI)]
+            outer = x in (21, -22)
+            single = [(RB if z in RIBS else MN) if (m.free(x, z, h) and (z in RIBS or (outer and h == 38))) else None
+                      for z in range(ZRD, ZFI)]
             lay_run(m, 'z', x, ZRD, single, h, BRICK1)
         # aisle roof stair: one course of 18-degree slopes plus fill behind it
-        lo, hi = [(29, 33), (26, 30), (23, 27)][ci]   # set back one stud behind the rib line
+        lo, hi = [(28, 32), (25, 29), (22, 26)][ci]
         x0 = lo if sd > 0 else -hi
         lay_run(m, 'z', ('a18', sd), ZR, [DBG] * (ZF + 2 - ZR), h, SLOPE18, width_axis_min=x0, face='+x' if sd > 0 else '-x', forbid={ZF + 1})
         fill = range(22, lo) if sd > 0 else range(-lo, -22)
