@@ -193,57 +193,67 @@ for i, s in enumerate(PEW_SEATS):
     if i == 9: step((2, 1), 'Pews: back half', 'interior')
     pew(s, 3, 19); pew(s, -19, -3)
 
-step((2, 3), 'Sanctuary: white marble steps', 'interior')
+step((2, 3), 'Sanctuary: three white marble steps', 'interior')
 SANC1 = {(x, z) for x in range(-9, 9) for z in range(-55, -47)}       # broad lower step
-SANC2 = {(x, z) for x in range(-6, 6) for z in range(-55, -49)}       # altar platform
+SANC2 = {(x, z) for x in range(-7, 7) for z in range(-55, -49)}       # middle step
+SANC3 = {(x, z) for x in range(-5, 5) for z in range(-55, -51)}       # altar footpace
 pack_area(m, SANC1, 4, PLATES2D, prefer='x', colorfn=lambda x, z: WHITE)
 pack_area(m, SANC2, 5, PLATES2D, prefer='z', colorfn=lambda x, z: WHITE)
+pack_area(m, SANC3, 6, PLATES2D, prefer='x', colorfn=lambda x, z: WHITE)
 
 step((2, 4), 'Altar, retable, cross and candles', 'interior')
+HA = 7                                                 # top of the footpace
 alt = {(x, z) for x in range(-3, 3) for z in range(-54, -51)}
 for c in range(2):                                    # wood altar with a white frontal facing the nave
-    pack_area(m, alt, 6 + 3 * c, BRICKS2D, prefer='x' if c == 0 else 'z',
+    pack_area(m, alt, HA + 3 * c, BRICKS2D, prefer='x' if c == 0 else 'z',
               colorfn=lambda x, z: WHITE if z == -52 else RB)
-pack_area(m, alt, 12, TILES2D, prefer='x', colorfn=lambda x, z: WHITE)
-for h in (6, 9):                                      # retable shelf behind the altar
+pack_area(m, alt, HA + 6, TILES2D, prefer='x', colorfn=lambda x, z: WHITE)
+for h in (HA, HA + 3):                                # retable shelf behind the altar
     lay_run(m, 'x', -55, -3, [RB] * 6, h, BRICK1)
 for x in (-3, -2, 1, 2):                              # altar candles
-    m.place('3062b', WHITE, x, -55, 12)
-    m.place('6141', TYEL, x, -55, 15)
-m.place('15573', RB, -1, -55, 12, r=0)                # altar cross
-m.place('3005', RB, -0.5, -55, 13, check=False)
-m.place('3623', RB, -1.5, -55, 16, r=0, check=False)
-m.place('3005', RB, -0.5, -55, 17, check=False)
+    m.place('3062b', WHITE, x, -55, HA + 6)
+    m.place('6141', TYEL, x, -55, HA + 9)
+m.place('15573', RB, -1, -55, HA + 6, r=0)            # altar cross
+m.place('3005', RB, -0.5, -55, HA + 7, check=False)
+m.place('3623', RB, -1.5, -55, HA + 10, r=0, check=False)
+m.place('3005', RB, -0.5, -55, HA + 11, check=False)
 for x in (-5, 4):                                     # tall candles either side of the altar
-    m.place('6141', GOLD, x, -52, 6)
-    for h in (7, 10, 13): m.place('3062b', WHITE, x, -52, h)
-    m.place('6141', TYEL, x, -52, 16)
-pack_area(m, {c for c in SANC2 if m.free(*c, 6)}, 6, TILES2D, prefer='x', colorfn=lambda x, z: WHITE)
+    m.place('6141', GOLD, x, -52, HA)
+    for h in (1, 4, 7): m.place('3062b', WHITE, x, -52, HA + h)
+    m.place('6141', TYEL, x, -52, HA + 10)
+pack_area(m, {c for c in SANC3 if m.free(*c, HA)}, HA, TILES2D, prefer='x', colorfn=lambda x, z: WHITE)
+pack_area(m, {c for c in SANC2 - SANC3 if m.free(*c, 6)}, 6, TILES2D, prefer='x', colorfn=lambda x, z: WHITE)
 pack_area(m, {c for c in SANC1 - SANC2 if m.free(*c, 5)}, 5, TILES2D, prefer='x', colorfn=lambda x, z: WHITE)
 
-step((2, 5), 'Credence tables and the St. Andrew\'s banner', 'interior')
+step((2, 5), 'Credence tables, sanctuary chairs and the St. Andrew\'s banner', 'interior')
 for x0 in (-12, 10):
     m.place('3003', RB, x0, -53, 4)
     m.place('3068b', WHITE, x0, -53, 7)
+for sd in (1, -1):                                    # sanctuary chairs facing the centre, red cushions
+    seat, back = (15, 16) if sd > 0 else (-16, -17)
+    m.place('3003', RB, min(seat, back), -50, 4)
+    lay_run(m, 'z', seat, -50, [DRED] * 2, 7, TILE1, hp=1)
+    for h in (7, 10): lay_run(m, 'z', back, -50, [RB] * 2, h, BRICK1)
+    lay_run(m, 'z', back, -50, [RB] * 2, 13, TILE1, hp=1)
 m.place('3023', RB, -16, -54, 4, r=0)                 # banner: blue saltire banner on a wood stand
 for h in (5, 8, 11): m.place('3004', BLUE, -16, -54, h, r=0)
 m.place('3069b', GOLD, -16, -54, 14, r=0)
 
-step((2, 6), 'Altar rail and kneeling cushions', 'interior')
-for xa in (-7, 1):                                    # split rail, posts at the ends, flat wood rail on top
-    for x in (xa, xa + 5): m.place('3005', RB, x, -46, 4)
-    lay_run(m, 'x', -46, xa, [RB] * 6, 7, PLATE1, hp=1)
-    lay_run(m, 'x', -46, xa, [RB] * 6, 8, TILE1, hp=1)
-    lay_run(m, 'x', -45, xa, [DRED] * 6, 4, TILE1, hp=1)
+step((2, 6), 'Altar rail and kneeling cushions, wall to wall', 'interior')
+for xa, posts in ((-20, (-20, -14, -8, -2)), (1, (1, 7, 13, 19))):   # split in the middle, posts every 6 studs
+    for x in posts: m.place('3005', RB, x, -46, 4)
+    lay_run(m, 'x', -46, xa, [RB] * 19, 7, PLATE1, hp=1)
+    lay_run(m, 'x', -46, xa, [RB] * 19, 8, TILE1, hp=1)
+    lay_run(m, 'x', -45, xa, [DRED] * 19, 4, TILE1, hp=1)
 
-step((2, 4), 'Choir pews: three rows each side', 'interior')
+step((2, 4), 'Choir pews: three rows on the right, two on the left', 'interior')
 ZS = -38                                         # choir pews run z -38..-31, facing the centre aisle
 for sd in (1, -1):
     X = (lambda x: x) if sd > 0 else (lambda x: -x - 1)
     for h in (4, 7):                             # fluted front along the centre aisle
         lay_run(m, 'z', X(7), ZS, [RB] * 8, h, {2: '2877'})
     lay_run(m, 'z', X(7), ZS, [RB] * 8, 10, TILE1, hp=1)
-    for seat in (9, 12, 15):
+    for seat in ((9, 12, 15) if sd > 0 else (9, 12)):   # three rows on the right, two on the left
         lay_run(m, 'z', X(seat), ZS, [RB] * 8, 4, BRICK1)
         for h in (4, 7):
             lay_run(m, 'z', X(seat + 1), ZS, [RB] * 8, h, BRICK1)
@@ -267,24 +277,22 @@ for sd in (1, -1):
         lay_run(m, 'z', x, -30, [RB] * 4, 13, TILE1, hp=1)
     m.place('3040b', RB, x0 + 1, -28, 13, r=FACE_R['-z']); m.place('3040b', RB, x0 + 2, -28, 13, r=FACE_R['-z'])
 
-step((2, 6), 'Organ console', 'interior')
-org = {(x, z) for x in range(-19, -14) for z in range(-44, -40)}
+step((2, 8), 'Organ console and grand piano behind the left choir pews', 'interior')
+org = {(x, z) for x in range(-20, -15) for z in range(-41, -37)}
 for c in range(2):
     pack_area(m, org, 4 + 3 * c, BRICKS2D, prefer='x' if c % 2 == 0 else 'z', colorfn=lambda x, z: RB)
-lay_run(m, 'x', -41, -19, [WHITE] * 5, 10, TILE1, hp=1)              # lower manual, nearest the bench
-lay_run(m, 'x', -42, -19, [BLACK] * 5, 10, TILE1, hp=1)              # upper manual
-for zr in (-43, -44):                                                 # music desk / case behind the keys
-    lay_run(m, 'x', zr, -19, [RB] * 5, 10, BRICK1)
-for x0 in (-18, -16):                                                  # bench
-    m.place('3005', RB, x0, -39, 4)
-m.place('3710', RB, -18, -39, 7, r=0)
-
-step((2, 8), 'Grand piano', 'interior')
-for x0, z0 in ((-14, -44), (-11, -44), (-13, -41)):
+lay_run(m, 'x', -38, -20, [WHITE] * 5, 10, TILE1, hp=1)              # lower manual, nearest the bench
+lay_run(m, 'x', -39, -20, [BLACK] * 5, 10, TILE1, hp=1)              # upper manual
+for zr in (-40, -41):                                                 # music desk / case behind the keys
+    lay_run(m, 'x', zr, -20, [RB] * 5, 10, BRICK1)
+for x0 in (-19, -17):                                                  # bench
+    m.place('3005', RB, x0, -36, 4)
+m.place('3710', RB, -19, -36, 7, r=0)
+for x0, z0 in ((-20, -34), (-17, -34), (-19, -31)):                    # piano legs
     m.place('3062b', BLACK, x0, z0, 4)
-m.place('3031', BLACK, -14, -44, 7)
-for x0 in (-14, -12):
-    m.place('3068b', BLACK, x0, -44, 8); m.place('3068b', BLACK, x0, -42, 8)
+m.place('3031', BLACK, -20, -34, 7)
+for x0 in (-20, -18):
+    m.place('3068b', BLACK, x0, -34, 8); m.place('3068b', BLACK, x0, -32, 8)
 
 # ================================================================== 3 walls, course by course
 for c in range(10):
@@ -306,8 +314,15 @@ for c in range(10):
             for x0 in (20, -22):
                 m.place('3004', RB, x0, z, h0, r=0)
     if c < 9:
+        SAC = range(-45, -41)                                  # doors through to the ambulatory hallways
         for x0 in (20, -22):                                   # chancel side walls (white, 2 wide)
-            lay_run(m, 'z', ('chw', x0), ZRD, [None if z in RIBS else WHITE for z in range(ZRD, -28)], h0, BRICK2, width_axis_min=x0)
+            lay_run(m, 'z', ('chw', x0), ZRD, [None if (z in RIBS or (1 <= c <= 7 and z in SAC)) else WHITE
+                                               for z in range(ZRD, -28)], h0, BRICK2, width_axis_min=x0)
+            if c == 1:
+                m.place('3020', WHITE, x0, SAC[0], 3, r=1)         # threshold up to the chancel floor
+                door(x0 + 1 if x0 > 0 else x0, SAC[0], h0=4, rf=1, color_door=WHITE)
+            if c == 7:
+                for h in (22, 23): m.place('3020', WHITE, x0, SAC[0], h, r=1)   # header over the door
     # cross walls at the end of each aisle, doors into the ambulatory
     for sd in (1, -1):
         xs = list(range(22, 28)) if sd > 0 else list(range(-28, -22))
