@@ -136,20 +136,20 @@ td.p{font:11.5px var(--mono);color:var(--muted)}
             <h3>Scale</h3>
             <div class="dims">
               <span>Minifig scale, 1 stud</span><span>≈ 0.34 m</span>
-              <span>Nave footprint</span><span>60 × 106 studs</span>
+              <span>Nave footprint</span><span>60 × 109 studs</span>
               <span>Base (eight 32 × 32 baseplates)</span><span>64 × 128 studs · 51 × 102 cm</span>
               <span>Brick wall / glass band top</span><span>8 / 10 bricks</span>
               <span>Roof break</span><span>41 plates ≈ 5.5 m</span>
               <span>Ridge</span><span>110 plates ≈ 14.8 m</span>
               <span>Steep roof pitch (stacked 45° slopes)</span><span>50°</span>
               <span>Aisle roof pitch (stacked 18° slopes)</span><span>22°</span>
-              <span>Rib spacing</span><span>12 studs ≈ 4.0 m (front bay 15)</span>
+              <span>Rib spacing</span><span>12 studs ≈ 4.0 m (front half bay 6)</span>
             </div>
             <h3>How it goes together</h3>
             <ul>
               <li>Walls are two bricks thick: tan brick outside, white plaster inside, with a clear clerestory band on top.</li>
               <li>The steep roof is a stair of dark grey 45° slopes backed by medium nougat inverted slopes, so the underside reads as the wood ceiling.</li>
-              <li>Eight ribs divide the roof into bays; the last stands at the narthex wall, so the front bay spans the whole narthex. In the seven bays between ribs, the right-hand side of the roof (seen from the street) is a lid that lifts straight off, carrying the ridge with it. The left side stays fixed, so the ceiling keeps its full length on that side for hanging lanterns. Six of the bays are identical.</li>
+              <li>Nine ribs divide the roof into bays, with a half bay between the last rib and the front wall. The narthex screen stands halfway between the last two ribs. In the eight bays between ribs, the right-hand side of the roof (seen from the street) is a lid that lifts straight off, carrying the ridge with it. The left side stays fixed, so the ceiling keeps its full length on that side for hanging lanterns. Seven of the bays are identical.</li>
               <li>Ribs are reddish brown slope stairs standing on the arcade posts, one stud thick, with a small gap below the ceiling so the roof lifts freely.</li>
               <li>The aisles have a flat medium nougat ceiling at the top of the glass band; the low aisle roofs are fixed.</li>
             </ul>
@@ -348,7 +348,7 @@ function buildBom(){
 }
 
 // ---------------------------------------------------------------- camera
-const views = {front:[[-44, 50, 170],[0, 18, -2]], side:[[175, 44, -2],[0, 16, -4]], above:[[-110, 135, 125],[0, 8, -4]], inside:[[0, 10, 22],[0, 12, -56]], loft:[[0, 7, -8],[0, 19, 46], 62]};
+const views = {front:[[-44, 50, 170],[0, 18, -2]], side:[[175, 44, -2],[0, 16, -4]], above:[[-110, 135, 125],[0, 8, -4]], inside:[[0, 10, 22],[0, 12, -56]], loft:[[0, 7, -5],[0, 19, 49], 62]};
 let tween = null;
 function setView(v){ const [p, t, f] = views[v]; camera.fov = f || 35; camera.updateProjectionMatrix(); tween = {p:new THREE.Vector3(...p), t:new THREE.Vector3(...t), k:0}; }
 function focusStep(){

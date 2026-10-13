@@ -7,18 +7,19 @@ import hashlib
 from core import *
 
 # ------------------------------------------------------------------ layout constants
-ZF, ZFI = 47, 46                             # front wall: outer / inner skin rows
+ZF, ZFI = 50, 49                             # front wall: outer / inner skin rows (half a bay beyond the last rib)
 ZR, ZRI = -58, -57                           # rear wall: outer / inner skin rows
 ZRD = -56                                    # reredos lining
-RIBS = [-52, -40, -28, -16, -4, 8, 20, 32]   # rib columns (1 stud thick), 12 studs apart; the last stands at the narthex wall
+RIBS = [-52, -40, -28, -16, -4, 8, 20, 32, 44]   # nine rib columns (1 stud thick), 12 studs apart
 WIN = [r + 5 for r in RIBS[:-1]]             # one window pair centred in each bay
 POSTS_Z = RIBS
 MODULES = [(ZR - 1, RIBS[0])] + [(a, b) for a, b in zip(RIBS, RIBS[1:])] + [(RIBS[-1], ZF + 2)]
 MID_MODS = MODULES[2:-1]                     # identical lift-off modules
-CHAPEL = range(41, 45)                       # chapel door in the right wall near the front corner
+CHAPEL = range(ZFI - 4, ZFI)                 # chapel door in the right wall near the front corner
+ZN = 38                                      # narthex screen wall, halfway between the last two ribs
 K = 41                                       # roof break (plates)
 def layer_h(k): return K + 3 * (k - 1)        # bottom of steep-roof layer k
-PEW_SEATS = [-20 + 3 * i for i in range(17)]
+PEW_SEATS = [-20 + 3 * i for i in range(18)]
 
 def mosaic(*key):
     hsh = int(hashlib.md5(repr(key).encode()).hexdigest(), 16) % 20
@@ -358,13 +359,13 @@ for c in range(10):
             if c <= 5 and -27 <= x < -23: return None
             if c == 6 and -4 <= x < 4: return RB
             return WHITE
-        if c == 0: door(-27, 33)
-        lay_run(m, 'x', 33, -28, [nw(x) for x in range(-28, 28)], h0, BRICK1)
+        if c == 0: door(-27, ZN)
+        lay_run(m, 'x', ZN, -28, [nw(x) for x in range(-28, 28)], h0, BRICK1)
 
 # ================================================================== 4 loft, beams, slab
 step((4, 1), 'Wood railing along the top of the narthex wall', 'loft')
 for x0 in list(range(-20, 20, 4)) + [23, -27]:
-    m.place('30055', RB, x0, 33, 21, r=0)
+    m.place('30055', RB, x0, ZN, 21, r=0)
 step((4, 2), 'Arcade beams', 'loft')
 for x0 in (20, -22):
     lay_run(m, 'z', ('beam', x0), ZRD, [None if z in RIBS else WHITE for z in range(ZRD, -28)], 27, BRICK2, width_axis_min=x0)   # chancel walls only
@@ -506,7 +507,7 @@ def module(z0, z1, name, order, organ=False, cross=False, mult=1, title=None, sp
                 width_axis_min=x0, face='+x' if sd > 0 else '-x')
     def inv(k, sd):
         x0 = 20 - k if sd > 0 else -(22 - k)
-        hook = (split and not organ or cross) and sd < 0 and k in LANTERN_LAYERS
+        hook = split and not organ and sd < 0 and k in LANTERN_LAYERS
         cols = [None if (sd < 0 and z in RIBS) or (hook and z == z0 + 6) else ic(z, k) for z in range(z0, z1)]
         if hook:     # a plain brick here gives the ceiling a flat spot with an anti-stud to hang a lantern from
             m.place('3004', MN, k - 22, z0 + 6, layer_h(k), r=0)
@@ -570,7 +571,7 @@ module(*MODULES[-1], 'roof_front', 3, cross=True, title='Front roof module with 
 
 # ================================================================== lanterns
 step((9, 5, 0), 'Hang the lanterns from the fixed ceiling', 'roof_lanterns')
-LANTERN_BAYS = [r + 6 for r in RIBS[2:]]            # the five nave bays and the narthex bay; none over the chancel
+LANTERN_BAYS = [r + 6 for r in RIBS[2:-1]]          # five nave bays plus the bay over the narthex screen; none over the chancel
 def lantern(x, z, ceil, double):
     """Round-plate anchor clutched into the ceiling's inverted slope, black bar(s), lantern of
     two white round bricks between pearl-gold caps."""
@@ -599,7 +600,7 @@ for x in range(-28, 28):
         if m.free(x, z, 0): tiles.add((x, z))
 porch_t = {(x, z) for x in range(-7, 7) for z in range(ZF + 1, ZF + 8) if m.free(x, z, 0)}
 def tcol(x, z):
-    if -3 <= x < 3 and -24 <= z < 33: return DBG
+    if -3 <= x < 3 and -24 <= z < ZN: return DBG
     return LBG
 pack_area(m, tiles | porch_t, 0, TILES2D, prefer='z', colorfn=tcol)
 step((1, 5), 'Platform tiles', 'base')
