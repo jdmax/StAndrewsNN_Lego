@@ -134,7 +134,6 @@ def wall_color(skin, side, x, z, c):
         else:
             if c < 8:
                 if -5 <= x < 5 and c <= 5: return None
-                if c == 7 and -28 <= x < 28: return None             # loft plate + 2 plates
                 return WHITE
             if ax < 22: return gable_color('front', 'inner', x, h)
             if ax < 28: return mosaic('aisle', x, h, 'o')
@@ -253,21 +252,32 @@ for sd in (1, -1):
     for h in (4, 7):                             # fluted front along the centre aisle
         lay_run(m, 'z', X(7), ZS, [RB] * 8, h, {2: '2877'})
     lay_run(m, 'z', X(7), ZS, [RB] * 8, 10, TILE1, hp=1)
-    for seat in ((9, 12, 15) if sd > 0 else (9, 12)):   # three rows on the right, two on the left
-        lay_run(m, 'z', X(seat), ZS, [RB] * 8, 4, BRICK1)
-        for h in (4, 7):
+    if sd > 0:                                    # right side: rows step up toward the wall on risers
+        tier2 = {(x, z) for x in range(11, 17) for z in range(ZS, ZS + 8)}
+        tier3 = {(x, z) for x in range(14, 17) for z in range(ZS, ZS + 8)}
+        pack_area(m, tier2, 4, PLATES2D, prefer='z', colorfn=lambda x, z: DBG)
+        pack_area(m, tier2, 5, PLATES2D, prefer='x', colorfn=lambda x, z: DBG)
+        pack_area(m, tier3, 6, PLATES2D, prefer='z', colorfn=lambda x, z: DBG)
+        pack_area(m, tier3, 7, PLATES2D, prefer='x', colorfn=lambda x, z: DBG)
+    rows = ((9, 4), (12, 6), (15, 8)) if sd > 0 else ((9, 4), (12, 4))   # (seat column, floor height)
+    for seat, f in rows:                              # three rows on the right, two on the left
+        lay_run(m, 'z', X(seat), ZS, [RB] * 8, f, BRICK1)
+        for h in (f, f + 3):
             lay_run(m, 'z', X(seat + 1), ZS, [RB] * 8, h, BRICK1)
-        lay_run(m, 'z', X(seat + 1), ZS, [RB] * 8, 10, TILE1, hp=1)
+        lay_run(m, 'z', X(seat + 1), ZS, [RB] * 8, f + 6, TILE1, hp=1)
+    if sd > 0:                                    # tile the exposed riser treads
+        for x, h in ((11, 6), (14, 8)):
+            lay_run(m, 'z', x, ZS, [DBG] * 8, h, TILE1, hp=1)
 step((2, 7), 'Fluted chancel front, lectern and pulpit', 'interior')
-FALL = lambda x: DRED if x in (17, 18, -19, -18) else RB
+FALL = lambda x: DRED if x in (6, 7, -8, -7) else RB
 for sd in (1, -1):
     X = (lambda x: x) if sd > 0 else (lambda x: -x - 1)
-    xa = min(X(5), X(15))
+    xa = min(X(9), X(19))
     for h in (4, 7):                                  # fluted parapet across the front of the choir
         lay_run(m, 'x', -27, xa, [RB] * 11, h, {2: '2877', 1: '3005'})
     lay_run(m, 'x', -27, xa, [RB] * 11, 10, TILE1, hp=1)
-    # pulpit (right) and lectern (left) built into the front corners: fluted U, open at the back
-    xs = [X(x) for x in range(16, 20)]; x0 = min(xs)
+    # pulpit (right) and lectern (left) flank the chancel steps: fluted U, open at the back
+    xs = [X(x) for x in range(5, 9)]; x0 = min(xs)
     for h in (4, 7, 10):
         cols = [FALL(x) if h >= 7 else RB for x in range(x0, x0 + 4)]
         lay_run(m, 'x', -27, x0, cols, h, lambda col: {2: '2877', 1: '3005'} if col == RB else {2: '3004'})
@@ -345,15 +355,9 @@ for c in range(10):
         lay_run(m, 'x', 33, -28, [nw(x) for x in range(-28, 28)], h0, BRICK1)
 
 # ================================================================== 4 loft, beams, slab
-step((4, 0), 'Choir loft floor', 'loft')
-loft = {(x, z) for x in range(-28, 28) for z in range(33, ZFI + 1) if m.free(x, z, 21)}
-LOFT1 = {(12, 2): '2445', (10, 2): '3832', (8, 2): '3034', (6, 2): '3795', (4, 2): '3020', (2, 2): '3022', (2, 1): '3023', (1, 1): '3024'}
-pack_area(m, loft, 21, LOFT1, prefer='z', colorfn=lambda x, z: MN)
-pack_area(m, loft, 22, PLATES2D, prefer='x', colorfn=lambda x, z: MN)
-lay_run(m, 'x', ZFI, -28, [WHITE] * 56, 23, PLATE1, hp=1)
-step((4, 1), 'Choir loft railing', 'loft')
+step((4, 1), 'Wood railing along the top of the narthex wall', 'loft')
 for x0 in list(range(-20, 20, 4)) + [23, -27]:
-    m.place('30055', RB, x0, 33, 23, r=0)
+    m.place('30055', RB, x0, 33, 21, r=0)
 step((4, 2), 'Arcade beams', 'loft')
 for x0 in (20, -22):
     lay_run(m, 'z', ('beam', x0), ZRD, [None if z in RIBS else WHITE for z in range(ZRD, -28)], 27, BRICK2, width_axis_min=x0)   # chancel walls only

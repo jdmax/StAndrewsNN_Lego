@@ -4,11 +4,11 @@ from build import m, STEPS, MODULES, MID_MODS
 from core import P, COLORS, BL_ID
 from ldlib import bbox
 
-SECTIONS = {1: 'Base and floor', 2: 'Interior', 3: 'Walls', 4: 'Loft and aisle ceilings', 5: 'Ribs',
+SECTIONS = {1: 'Base and floor', 2: 'Interior', 3: 'Walls', 4: 'Narthex railing and aisle ceilings', 5: 'Ribs',
             6: 'Aisle roofs', 7: 'Gables', 8: 'Porch', 9: 'Roof modules'}
 SUBS = ['base', 'interior', 'walls', 'loft', 'ribs', 'aisles', 'gables', 'porch', 'roof_rear', 'roof_organ', 'roof_organ_lid', 'roof_mid', 'roof_mid_lid', 'roof_front', 'roof_lanterns']
 SUB_TITLE = {'base': 'Baseplates, chancel platform and floor', 'interior': 'Pews and chancel furniture',
-             'walls': 'Walls, posts and doors', 'loft': 'Choir loft, arcade beams and aisle ceilings',
+             'walls': 'Walls, posts and doors', 'loft': 'Narthex railing, chancel beams and aisle ceilings',
              'ribs': 'Glulam ribs', 'aisles': 'Knee walls and aisle roofs', 'gables': 'Front and rear gables, reredos',
              'porch': 'Entrance porch', 'roof_rear': 'Rear roof module (fixed)',
              'roof_organ': 'Roof bay over the altar with organ grilles, fixed left side',
