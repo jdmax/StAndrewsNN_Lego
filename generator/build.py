@@ -75,7 +75,7 @@ def gable_color(side, skin, x, h, k=None):
         kk = k if (k is not None and k >= 1) else ((h - K) // 3 + 1 if h >= 24 else None)
         if kk is not None:
             lim = 20 - kk
-            if lim - 5 <= x < lim or -lim <= x < -lim + 5: return mosaic('rake', x, h)   # wide enough to show inside the front rib
+            if lim - 3 <= x < lim or -lim <= x < -lim + 3: return mosaic('rake', x, h)
         f = front_feature(x, h, inner=(skin == 'inner'))
         if skin == 'outer' and 30 <= h < 32 and -5 <= x < 5: return WHITE
         if f is not None:
