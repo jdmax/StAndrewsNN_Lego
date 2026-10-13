@@ -10,7 +10,7 @@ from core import *
 ZF, ZFI = 47, 46                             # front wall: outer / inner skin rows
 ZR, ZRI = -58, -57                           # rear wall: outer / inner skin rows
 ZRD = -56                                    # reredos lining
-RIBS = [-52, -40, -28, -16, -4, 8, 20, 32, 44]   # rib columns (1 stud thick), 12 studs apart
+RIBS = [-52, -40, -28, -16, -4, 8, 20, 32]   # rib columns (1 stud thick), 12 studs apart; the last stands at the narthex wall
 WIN = [r + 5 for r in RIBS[:-1]]             # one window pair centred in each bay
 POSTS_Z = RIBS
 MODULES = [(ZR - 1, RIBS[0])] + [(a, b) for a, b in zip(RIBS, RIBS[1:])] + [(RIBS[-1], ZF + 2)]
@@ -355,7 +355,6 @@ for c in range(10):
         def nw(x):
             if c <= 5 and -3 <= x < 3: return None
             if c <= 5 and x in (-4, 3): return RB
-            if c <= 5 and x == -5: return mosaic('nside', x, c)      # stained-glass sidelight
             if c <= 5 and -27 <= x < -23: return None
             if c == 6 and -4 <= x < 4: return RB
             return WHITE
@@ -507,7 +506,7 @@ def module(z0, z1, name, order, organ=False, cross=False, mult=1, title=None, sp
                 width_axis_min=x0, face='+x' if sd > 0 else '-x')
     def inv(k, sd):
         x0 = 20 - k if sd > 0 else -(22 - k)
-        hook = split and not organ and sd < 0 and k in LANTERN_LAYERS
+        hook = (split and not organ or cross) and sd < 0 and k in LANTERN_LAYERS
         cols = [None if (sd < 0 and z in RIBS) or (hook and z == z0 + 6) else ic(z, k) for z in range(z0, z1)]
         if hook:     # a plain brick here gives the ceiling a flat spot with an anti-stud to hang a lantern from
             m.place('3004', MN, k - 22, z0 + 6, layer_h(k), r=0)
@@ -571,7 +570,7 @@ module(*MODULES[-1], 'roof_front', 3, cross=True, title='Front roof module with 
 
 # ================================================================== lanterns
 step((9, 5, 0), 'Hang the lanterns from the fixed ceiling', 'roof_lanterns')
-LANTERN_BAYS = [r + 6 for r in RIBS[2:-1]]          # the five nave bays and the narthex bay; none over the chancel
+LANTERN_BAYS = [r + 6 for r in RIBS[2:]]            # the five nave bays and the narthex bay; none over the chancel
 def lantern(x, z, ceil, double):
     """Round-plate anchor clutched into the ceiling's inverted slope, black bar(s), lantern of
     two white round bricks between pearl-gold caps."""
