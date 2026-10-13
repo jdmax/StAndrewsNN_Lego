@@ -54,12 +54,16 @@ def window_at(z):
     return None
 
 # ------------------------------------------------------------------ wall cell colours
-def front_feature(x, h):
-    if not (-4 <= x < 4) or h < 32: return None
-    if x in (-4, 3): return WHITE
-    if x in (-3, 2): return mosaic('strip', x, h)
-    if 77 <= h < 80: return WHITE
-    if -1 <= x < 1 and 35 <= h < 89: return WHITE
+def front_feature(x, h, inner=False):
+    """Centre of the front gable: a panel the width of the narthex doorway with a white cross,
+    between two stained-glass strips. Inside, the strips and panel run down to the top of the
+    narthex wall so they line up with the doorway below."""
+    lo = 21 if inner else 32
+    if not (-5 <= x < 5) or h < lo: return None
+    if x in (-5, 4): return WHITE
+    if x in (-4, 3): return mosaic('strip', x, h)
+    if 70 <= h < 73: return WHITE                                   # crossbar about a third of the way down
+    if -1 <= x < 1 and (24 if inner else 35) <= h < 89: return WHITE
     return TAN
 
 def gable_color(side, skin, x, h, k=None):
@@ -71,12 +75,12 @@ def gable_color(side, skin, x, h, k=None):
         kk = k if (k is not None and k >= 1) else ((h - K) // 3 + 1 if h >= 24 else None)
         if kk is not None:
             lim = 20 - kk
-            if x in (lim - 1, lim - 2, lim - 3, -lim, -lim + 1, -lim + 2): return mosaic('rake', x, h)
-        f = front_feature(x, h)
-        if h >= 30 and h < 32 and -4 <= x < 4: return WHITE if skin == 'outer' else MN
+            if lim - 5 <= x < lim or -lim <= x < -lim + 5: return mosaic('rake', x, h)   # wide enough to show inside the front rib
+        f = front_feature(x, h, inner=(skin == 'inner'))
+        if skin == 'outer' and 30 <= h < 32 and -5 <= x < 5: return WHITE
         if f is not None:
             if skin == 'outer' or f in (TDB, TLB, TRED, TYEL): return f
-            if x in (-4, 3): return MN            # no white frames inside, glass meets the wood
+            if x in (-5, 4): return MN            # no white frames inside, glass meets the wood
             return WHITE if f == WHITE else LBG   # grey panel with the white cross, as seen from the nave
         return SB if skin == 'outer' else MN
     else:
@@ -134,6 +138,9 @@ def wall_color(skin, side, x, z, c):
         else:
             if c < 8:
                 if -5 <= x < 5 and c <= 5: return None
+                f = front_feature(x, h, inner=True) if c == 7 else None
+                if f is not None:                  # strips and panel visible above the narthex wall
+                    return f if f in (TDB, TLB, TRED, TYEL) else (MN if x in (-5, 4) else WHITE if f == WHITE else LBG)
                 return WHITE
             if ax < 22: return gable_color('front', 'inner', x, h)
             if ax < 28: return mosaic('aisle', x, h, 'o')
@@ -348,6 +355,7 @@ for c in range(10):
         def nw(x):
             if c <= 5 and -3 <= x < 3: return None
             if c <= 5 and x in (-4, 3): return RB
+            if c <= 5 and x == -5: return mosaic('nside', x, c)      # stained-glass sidelight
             if c <= 5 and -27 <= x < -23: return None
             if c == 6 and -4 <= x < 4: return RB
             return WHITE
