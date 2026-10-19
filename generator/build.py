@@ -92,14 +92,17 @@ def gable_color(side, skin, x, h, k=None):
         if rose or cross_hole(x, h): return None
         return WHITE
 
+ROSE_C, ROSE_RX, ROSE_RH = 66.5, 4.0, 12.0   # rose window centre height (plates), half-width (studs), half-height (plates)
 def rose_cell(x, h):
-    if -2 <= x < 2 and 65 <= h < 71:
-        return TYEL if (-1 <= x < 1) else TDB
-    if -1 <= x < 1 and (62 <= h < 65 or 71 <= h < 74): return TRED
-    return None
+    dx, dh = (x + 0.5) / ROSE_RX, (h + 1.5 - ROSE_C) / ROSE_RH
+    r = dx * dx + dh * dh
+    if r > 1.0: return None
+    if r < 0.12: return TYEL                      # small gold centre
+    if r > 0.7: return TLB                        # pale ring round the edge
+    return TDB if (x + h // 3) % 4 else TRED     # deep blue field with a few red pieces
 def cross_hole(x, h):
-    if -1 <= x < 1 and (44 <= h < 59 or 77 <= h < 80): return True
-    if x in (-5, -4, 3, 4) and 65 <= h < 71: return True
+    if -1 <= x < 1 and 26 <= h < 86: return True                       # upright, from just above the gradine
+    if 4 <= abs(x + 0.5) + 0.5 <= 7 and 62 <= h < 71: return True      # arms reach out past the rose
     return False
 
 def clerestory(z, c):
@@ -468,7 +471,7 @@ def gable_band(side, h, hp, xs, k=None, table=None):
 def reredos(h, hp, xs):
     def col(x):
         if h < 11: return LBG
-        if -5 <= x < 5: return None
+        if -8 <= x < 8: return None                # recessed panel, wide enough for the gradine
         return WHITE
     cols = [col(x) if m.free(x, ZRD, h) else None for x in xs]
     lay_run(m, 'x', ZRD, xs[0], cols, h, PLATE1 if hp == 1 else BRICK1, hp=hp)
