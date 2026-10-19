@@ -239,7 +239,8 @@ m.place('3005', RB, -0.5, -57, HA + 7, check=False)
 m.place('3623', RB, -1.5, -57, HA + 10, r=0, check=False)
 m.place('3005', RB, -0.5, -57, HA + 11, check=False)
 lay_run(m, 'x', -57, -7, [RB if m.free(x, -57, HA + 6) else None for x in range(-7, 7)], HA + 6, TILE1, hp=1)
-pack_area(m, {c for c in SANC3 if m.free(*c, HA)}, HA, TILES2D, prefer='x', colorfn=lambda x, z: WHITE)
+BEHIND = {(x, z) for x in range(-4, 4) for z in (-56, -55)}       # walkway behind the altar: studs left showing for minifigs
+pack_area(m, {c for c in SANC3 - BEHIND if m.free(*c, HA)}, HA, TILES2D, prefer='x', colorfn=lambda x, z: WHITE)
 pack_area(m, {c for c in SANC2 - SANC3 if m.free(*c, SF + 2)}, SF + 2, TILES2D, prefer='x', colorfn=lambda x, z: WHITE)
 pack_area(m, {c for c in SANC1 - SANC2 if m.free(*c, SF + 1)}, SF + 1, TILES2D, prefer='x', colorfn=lambda x, z: WHITE)
 
@@ -311,6 +312,8 @@ for sd in (1, -1):
         lay_run(m, 'x', CW + 1, x0, cols, h, lambda col: {2: '2877', 1: '3005'} if col == RB else {2: '3004'})
         for x in (x0, x0 + 3):
             lay_run(m, 'z', x, CW - 2, [RB] * 3, h, BRICK1)
+    pack_area(m, {(x, z) for x in (x0 + 1, x0 + 2) for z in range(CW - 2, CW + 1)}, 4, BRICKS2D,
+              prefer='z', colorfn=lambda x, z: RB)    # raised step inside, studs up for a minifig to stand on
     for x in (x0, x0 + 3):                            # tiled side walls; the reading desk sits between them
         lay_run(m, 'z', x, CW - 2, [RB] * 4, 13, TILE1, hp=1)
     m.place('3040b', RB, x0 + 1, CW, 13, r=FACE_R['-z']); m.place('3040b', RB, x0 + 2, CW, 13, r=FACE_R['-z'])
