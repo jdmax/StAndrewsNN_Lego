@@ -202,18 +202,18 @@ for i, s in enumerate(PEW_SEATS):
 
 step((2, 3), 'Sanctuary: three white marble steps', 'interior')
 SANC1 = {(x, z) for x in range(-10, 10) for z in range(-55, -47)}       # broad lower step
-SANC2 = {(x, z) for x in range(-8, 8) for z in range(-55, -49)}       # middle step
-SANC3 = {(x, z) for x in range(-7, 7) for z in range(-55, -51)}       # altar footpace
+SANC2 = {(x, z) for x in range(-8, 8) for z in range(-55, -48)}       # middle step
+SANC3 = {(x, z) for x in range(-7, 7) for z in range(-55, -50)}       # altar footpace, deep enough to stand behind the altar
 pack_area(m, SANC1, 4, PLATES2D, prefer='x', colorfn=lambda x, z: WHITE)
 pack_area(m, SANC2, 5, PLATES2D, prefer='z', colorfn=lambda x, z: WHITE)
 pack_area(m, SANC3, 6, PLATES2D, prefer='x', colorfn=lambda x, z: WHITE)
 
 step((2, 4), 'Altar, retable, cross and candles', 'interior')
 HA = 7                                                 # top of the footpace
-alt = {(x, z) for x in range(-3, 3) for z in range(-54, -51)}
+alt = {(x, z) for x in range(-3, 3) for z in range(-52, -50)}   # free-standing, a 2-stud walkway behind it
 for c in range(2):                                    # wood altar with a white frontal facing the nave
     pack_area(m, alt, HA + 3 * c, BRICKS2D, prefer='x' if c == 0 else 'z',
-              colorfn=lambda x, z: WHITE if z == -52 else RB)
+              colorfn=lambda x, z: WHITE if z == -51 else RB)
 pack_area(m, alt, HA + 6, TILES2D, prefer='x', colorfn=lambda x, z: WHITE)
 for h in (HA, HA + 3):                                # wide fluted wood gradine behind the altar
     lay_run(m, 'x', -55, -7, [RB] * 14, h, {2: '2877'})
