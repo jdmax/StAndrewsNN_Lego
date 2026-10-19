@@ -657,6 +657,7 @@ for x in range(-28, 28):
 porch_t = {(x, z) for x in range(-7, 7) for z in range(ZF + 1, ZF + 8) if m.free(x, z, 0)}
 def tcol(x, z):
     pews = (3 <= abs(x + 0.5) + 0.5 <= 19) and PEW_SEATS[0] <= z <= PEW_SEATS[-1] + 1
+    if ZN < z < ZFI: return DBG            # narthex (entrance, chapel and left wing) is slate
     return DBG if pews else WHITE          # slate under the pew blocks, light tile on the walkways
 pack_area(m, tiles | porch_t, 0, TILES2D, prefer='z', colorfn=tcol)
 step((1, 5), 'Platform tiles', 'base')
