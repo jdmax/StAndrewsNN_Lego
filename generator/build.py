@@ -387,15 +387,43 @@ for c in range(10):
             return WHITE
         if c == 0: door(-27, ZN)
         lay_run(m, 'x', ZN, -28, [nw(x) for x in range(-28, 28)], h0, BRICK1)
+        # partitions either side of the entrance: an open doorway on the left, the chapel door on the right
+        PD = range(ZN + 4, ZN + 8)
+        for xp in (-10, 9):
+            cols = [None if (c <= 5 and z in PD) else (RB if (c == 6 and z in PD) else WHITE) for z in range(ZN + 1, ZFI)]
+            if c == 0 and xp > 0: door(xp, PD[0], rf=1)
+            lay_run(m, 'z', xp, ZN + 1, cols, h0, BRICK1)
 
 # ================================================================== 4 loft, beams, slab
 step((4, 1), 'Wood railing along the top of the narthex wall', 'loft')
 for x0 in list(range(-20, 20, 4)) + [23, -27]:
     m.place('30055', RB, x0, ZN, 21, r=0)
-step((4, 2), 'Arcade beams', 'loft')
+for xp in (-10, 9):                                    # railing carries on along the tops of the partitions
+    m.place('30055', RB, xp, ZN + 1, 21, r=1)
+
+step((4, 2), 'Entrance soffit over the front doors, and the narthex chapel', 'loft')
+SOF = {(x, z) for x in range(-10, 10) for z in range(ZN + 5, ZFI)}
+pack_area(m, SOF, 21, PLATES2D, prefer='x', colorfn=lambda x, z: WHITE)    # low white ceiling over the entrance
+pack_area(m, SOF, 22, PLATES2D, prefer='z', colorfn=lambda x, z: WHITE)
+lay_run(m, 'x', ZN + 5, -10, [WHITE] * 20, 23, TILE1, hp=1)
+# chapel in the right wing: simple altar against the side wall, three short pews facing it
+for c2 in range(2):
+    pack_area(m, {(x, z) for x in (25, 26) for z in range(ZN + 3, ZN + 7)}, 3 * c2, BRICKS2D, prefer='z',
+              colorfn=lambda x, z: RB)
+m.place('15573', GOLD, 26, ZN + 4, 6, r=1)              # small brass cross on the chapel altar
+m.place('3005', GOLD, 26, ZN + 4.5, 7, check=False)
+m.place('3623', GOLD, 26, ZN + 3.5, 10, r=1, check=False)
+m.place('3005', GOLD, 26, ZN + 4.5, 11, check=False)
+pack_area(m, {(x, z) for x in (25, 26) for z in range(ZN + 3, ZN + 7) if m.free(x, z, 6)}, 6, TILES2D, prefer='z',
+          colorfn=lambda x, z: WHITE)
+for seat in (12, 15, 18):                                # pews face the altar (toward the right wall)
+    lay_run(m, 'z', seat, ZN + 2, [RB] * 7, 0, BRICK1)
+    for h in (0, 3): lay_run(m, 'z', seat - 1, ZN + 2, [RB] * 7, h, BRICK1)
+    lay_run(m, 'z', seat - 1, ZN + 2, [RB] * 7, 6, TILE1, hp=1)
+step((4, 3), 'Arcade beams', 'loft')
 for x0 in (20, -22):
     lay_run(m, 'z', ('beam', x0), ZRD, [None if z in RIBS else WHITE for z in range(ZRD, CW)], 27, BRICK2, width_axis_min=x0)   # chancel walls only
-step((4, 3), 'Aisle ceilings (lower plate layer)', 'loft')
+step((4, 4), 'Aisle ceilings (lower plate layer)', 'loft')
 def slab_cells():
     out = set()
     for sd in (1, -1):
@@ -411,7 +439,7 @@ def slab_col(x, z):
     return WHITE if z == ZR and abs(x + 0.5) < 30 else MN
 sc = slab_cells()
 pack_area(m, sc, 30, PLATES2D, prefer='x', colorfn=slab_col)
-step((4, 4), 'Aisle ceilings (upper plate layer)', 'loft')
+step((4, 5), 'Aisle ceilings (upper plate layer)', 'loft')
 pack_area(m, sc, 31, PLATES2D, prefer='z', colorfn=slab_col)
 
 # ================================================================== 5 ribs
