@@ -296,15 +296,16 @@ m.place('3623', RB, 10.5, CW + 4, 11, r=0, check=False)
 m.place('3005', RB, 11.5, CW + 4, 12, check=False)
 
 step((2, 7), 'Fluted chancel front, lectern and pulpit', 'interior')
-FALL = lambda x: DRED if x in (6, 7, -8, -7) else RB
+FALL = lambda x: DRED if x in (11, 12, -13, -12) else RB
 for sd in (1, -1):
     X = (lambda x: x) if sd > 0 else (lambda x: -x - 1)
-    xa = min(X(9), X(19))
-    for h in (4, 7):                                  # fluted parapet across the front of the choir
-        lay_run(m, 'x', CW + 1, xa, [RB] * 11, h, {2: '2877', 1: '3005'})
-    lay_run(m, 'x', CW + 1, xa, [RB] * 11, 10, TILE1, hp=1)
-    # pulpit (right) and lectern (left) flank the chancel steps: fluted U, open at the back
-    xs = [X(x) for x in range(5, 9)]; x0 = min(xs)
+    # pulpit (right) and lectern (left) stand in the middle of their halves of the chancel front
+    xs = [X(x) for x in range(10, 14)]; x0 = min(xs)
+    xa = min(X(5), X(19))
+    par = [None if x0 <= x < x0 + 4 else RB for x in range(xa, xa + 15)]
+    for h in (4, 7):                                  # fluted parapet either side of the pulpit / lectern
+        lay_run(m, 'x', CW + 1, xa, par, h, {2: '2877', 1: '3005'})
+    lay_run(m, 'x', CW + 1, xa, par, 10, TILE1, hp=1)
     for h in (4, 7, 10):
         cols = [FALL(x) if h >= 7 else RB for x in range(x0, x0 + 4)]
         lay_run(m, 'x', CW + 1, x0, cols, h, lambda col: {2: '2877', 1: '3005'} if col == RB else {2: '3004'})
