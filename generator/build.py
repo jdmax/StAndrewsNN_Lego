@@ -200,21 +200,33 @@ for i, s in enumerate(PEW_SEATS):
     if i == 9: step((2, 1), 'Pews: back half', 'interior')
     pew(s, 3, 19); pew(s, -19, -3)
 
-step((2, 3), 'Sanctuary: three white marble steps', 'interior')
-SANC1 = {(x, z) for x in range(-10, 10) for z in range(-55, -47)}       # broad lower step
-SANC2 = {(x, z) for x in range(-8, 8) for z in range(-55, -48)}       # middle step
-SANC3 = {(x, z) for x in range(-7, 7) for z in range(-55, -50)}       # altar footpace, deep enough to stand behind the altar
-pack_area(m, SANC1, 4, PLATES2D, prefer='x', colorfn=lambda x, z: WHITE)
-pack_area(m, SANC2, 5, PLATES2D, prefer='z', colorfn=lambda x, z: WHITE)
-pack_area(m, SANC3, 6, PLATES2D, prefer='x', colorfn=lambda x, z: WHITE)
+step((2, 2), 'Sanctuary floor: one step up at the altar rail', 'interior')
+SF = 6                                                 # sanctuary floor level, one step above the chancel
+SANCT = {(x, z) for x in range(-20, 20) for z in range(-55, -45)}
+pack_area(m, SANCT, 4, PLATES2D, prefer='x', colorfn=lambda x, z: DBG)
+pack_area(m, SANCT, 5, PLATES2D, prefer='z', colorfn=lambda x, z: DBG)
+lay_run(m, 'x', -45, -20, [DBG] * 40, 4, PLATE1, hp=1)                 # kneeling step in front of the rail
+lay_run(m, 'x', -45, -20, [DBG if x in (-1, 0) else DRED for x in range(-20, 20)], 5, TILE1, hp=1)   # red kneelers
 
-step((2, 4), 'Altar, retable, cross and candles', 'interior')
-HA = 7                                                 # top of the footpace
+step((2, 3), 'Sanctuary: three narrow white marble steps', 'interior')
+SANC1 = {(x, z) for x in range(-9, 9) for z in range(-55, -48)}       # lowest step
+SANC2 = {(x, z) for x in range(-8, 8) for z in range(-55, -49)}       # middle step
+SANC3 = {(x, z) for x in range(-7, 7) for z in range(-55, -50)}       # altar footpace, deep enough to stand behind the altar
+pack_area(m, SANC1, SF, PLATES2D, prefer='x', colorfn=lambda x, z: WHITE)
+pack_area(m, SANC2, SF + 1, PLATES2D, prefer='z', colorfn=lambda x, z: WHITE)
+pack_area(m, SANC3, SF + 2, PLATES2D, prefer='x', colorfn=lambda x, z: WHITE)
+
+step((2, 4), 'Altar, gradine, cross and candles', 'interior')
+HA = SF + 3                                            # top of the footpace
 alt = {(x, z) for x in range(-3, 3) for z in range(-52, -50)}   # free-standing, a 2-stud walkway behind it
 for c in range(2):                                    # wood altar with a white frontal facing the nave
     pack_area(m, alt, HA + 3 * c, BRICKS2D, prefer='x' if c == 0 else 'z',
               colorfn=lambda x, z: WHITE if z == -51 else RB)
-pack_area(m, alt, HA + 6, TILES2D, prefer='x', colorfn=lambda x, z: WHITE)
+for x in (-3, 2):                                     # two tall candles standing on the altar
+    m.place('6141', GOLD, x, -52, HA + 6)
+    for h in (1, 4, 7): m.place('3062b', WHITE, x, -52, HA + 6 + h)
+    m.place('6141', TYEL, x, -52, HA + 16)
+pack_area(m, {c for c in alt if m.free(*c, HA + 6)}, HA + 6, TILES2D, prefer='x', colorfn=lambda x, z: WHITE)
 for h in (HA, HA + 3):                                # wide fluted wood gradine behind the altar
     lay_run(m, 'x', -55, -7, [RB] * 14, h, {2: '2877'})
 for x in (-6, -4, -3, 2, 3, 5):                       # three candles each side of the cross
@@ -225,35 +237,31 @@ m.place('15573', RB, -1, -55, HA + 6, r=0)            # altar cross
 m.place('3005', RB, -0.5, -55, HA + 7, check=False)
 m.place('3623', RB, -1.5, -55, HA + 10, r=0, check=False)
 m.place('3005', RB, -0.5, -55, HA + 11, check=False)
-for x in (-6, 5):                                     # tall candles either side of the altar
-    m.place('6141', GOLD, x, -52, HA)
-    for h in (1, 4, 7): m.place('3062b', WHITE, x, -52, HA + h)
-    m.place('6141', TYEL, x, -52, HA + 10)
 lay_run(m, 'x', -55, -7, [RB if m.free(x, -55, HA + 6) else None for x in range(-7, 7)], HA + 6, TILE1, hp=1)
 pack_area(m, {c for c in SANC3 if m.free(*c, HA)}, HA, TILES2D, prefer='x', colorfn=lambda x, z: WHITE)
-pack_area(m, {c for c in SANC2 - SANC3 if m.free(*c, 6)}, 6, TILES2D, prefer='x', colorfn=lambda x, z: WHITE)
-pack_area(m, {c for c in SANC1 - SANC2 if m.free(*c, 5)}, 5, TILES2D, prefer='x', colorfn=lambda x, z: WHITE)
+pack_area(m, {c for c in SANC2 - SANC3 if m.free(*c, SF + 2)}, SF + 2, TILES2D, prefer='x', colorfn=lambda x, z: WHITE)
+pack_area(m, {c for c in SANC1 - SANC2 if m.free(*c, SF + 1)}, SF + 1, TILES2D, prefer='x', colorfn=lambda x, z: WHITE)
 
 step((2, 5), 'Credence tables, sanctuary chairs and the St. Andrew\'s banner', 'interior')
 for x0 in (-12, 10):
-    m.place('3003', RB, x0, -53, 4)
-    m.place('3068b', WHITE, x0, -53, 7)
+    m.place('3003', RB, x0, -53, SF)
+    m.place('3068b', WHITE, x0, -53, SF + 3)
 for sd in (1, -1):                                    # sanctuary chairs facing the centre, red cushions
     seat, back = (15, 16) if sd > 0 else (-16, -17)
-    m.place('3003', RB, min(seat, back), -50, 4)
-    lay_run(m, 'z', seat, -50, [DRED] * 2, 7, TILE1, hp=1)
-    for h in (7, 10): lay_run(m, 'z', back, -50, [RB] * 2, h, BRICK1)
-    lay_run(m, 'z', back, -50, [RB] * 2, 13, TILE1, hp=1)
-m.place('3023', RB, -16, -54, 4, r=0)                 # banner: blue saltire banner on a wood stand
-for h in (5, 8, 11): m.place('3004', BLUE, -16, -54, h, r=0)
-m.place('3069b', GOLD, -16, -54, 14, r=0)
+    m.place('3003', RB, min(seat, back), -50, SF)
+    lay_run(m, 'z', seat, -50, [DRED] * 2, SF + 3, TILE1, hp=1)
+    for h in (SF + 3, SF + 6): lay_run(m, 'z', back, -50, [RB] * 2, h, BRICK1)
+    lay_run(m, 'z', back, -50, [RB] * 2, SF + 9, TILE1, hp=1)
+m.place('3023', RB, -16, -54, SF, r=0)                # banner: blue saltire banner on a wood stand
+for h in (1, 4, 7): m.place('3004', BLUE, -16, -54, SF + h, r=0)
+m.place('3069b', GOLD, -16, -54, SF + 10, r=0)
 
-step((2, 6), 'Altar rail and kneeling cushions, wall to wall', 'interior')
+step((2, 6), 'Altar rail, wall to wall', 'interior')
 for xa, posts in ((-20, (-20, -14, -8, -2)), (1, (1, 7, 13, 19))):   # split in the middle, posts every 6 studs
-    for x in posts: m.place('3005', RB, x, -46, 4)
-    lay_run(m, 'x', -46, xa, [RB] * 19, 7, PLATE1, hp=1)
-    lay_run(m, 'x', -46, xa, [RB] * 19, 8, TILE1, hp=1)
-    lay_run(m, 'x', -45, xa, [DRED] * 19, 4, TILE1, hp=1)
+    for x in posts: m.place('3005', RB, x, -46, SF)
+    lay_run(m, 'x', -46, xa, [RB] * 19, SF + 3, PLATE1, hp=1)
+    lay_run(m, 'x', -46, xa, [RB] * 19, SF + 4, TILE1, hp=1)
+pack_area(m, {c for c in SANCT if m.free(*c, SF)}, SF, TILES2D, prefer='x', colorfn=lambda x, z: DBG)   # slate sanctuary floor
 
 step((2, 4), 'Choir pews: three rows on the right, two on the left', 'interior')
 ZS = -38                                         # choir pews run z -38..-31, facing the centre aisle
