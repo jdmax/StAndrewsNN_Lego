@@ -289,12 +289,12 @@ for sd in (1, -1):
         for x, h in ((11, 6), (14, 8)):
             lay_run(m, 'z', x, ZS, [DBG] * 8, h, TILE1, hp=1)
 step((2, 9), 'Baptismal font', 'interior')
-for h in (0, 3): m.place('3003', RB, 11, CW + 3, h)      # stepped wood pedestal in front of the chancel, by the pulpit
-m.place('3022', RB, 11, CW + 3, 6)
-m.place('15573', RB, 11, CW + 4, 7, r=0)                 # small cross on top
-m.place('3005', RB, 11.5, CW + 4, 8, check=False)
-m.place('3623', RB, 10.5, CW + 4, 11, r=0, check=False)
-m.place('3005', RB, 11.5, CW + 4, 12, check=False)
+for h in (0, 3): m.place('3003', RB, 16, CW + 3, h)      # stepped wood pedestal in front of the chancel, to the wall side of the pulpit
+m.place('3022', RB, 16, CW + 3, 6)
+m.place('15573', RB, 16, CW + 4, 7, r=0)                 # small cross on top
+m.place('3005', RB, 16.5, CW + 4, 8, check=False)
+m.place('3623', RB, 15.5, CW + 4, 11, r=0, check=False)
+m.place('3005', RB, 16.5, CW + 4, 12, check=False)
 
 step((2, 7), 'Fluted chancel front, lectern and pulpit', 'interior')
 FALL = lambda x: DRED if x in (11, 12, -13, -12) else RB
