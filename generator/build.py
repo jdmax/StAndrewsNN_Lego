@@ -388,11 +388,11 @@ for c in range(10):
         if c == 0: door(-27, ZN)
         lay_run(m, 'x', ZN, -28, [nw(x) for x in range(-28, 28)], h0, BRICK1)
         # partitions either side of the entrance: an open doorway on the left, the chapel door on the right
-        PD = range(ZN + 4, ZN + 8)
+        PD = range(ZN + 1, ZN + 5)                     # doorways at the nave end of the partitions
         for xp in (-10, 9):
-            cols = [None if (c <= 5 and z in PD) else (RB if (c == 6 and z in PD) else WHITE) for z in range(ZN + 1, ZFI)]
+            cols = [None if (c <= 5 and z in PD) else WHITE for z in range(ZN + 1, ZFI)]
             if c == 0 and xp > 0: door(xp, PD[0], rf=1)
-            lay_run(m, 'z', xp, ZN + 1, cols, h0, BRICK1)
+            lay_run(m, 'z', xp, ZN + 1, cols, h0, BRICK1, forbid={ZN + 5} if c == 6 else ())   # lintel laps onto the wall
 
 # ================================================================== 4 loft, beams, slab
 step((4, 1), 'Wood railing along the top of the narthex wall', 'loft')
@@ -402,24 +402,26 @@ for xp in (-10, 9):                                    # railing carries on alon
     m.place('30055', RB, xp, ZN + 1, 21, r=1)
 
 step((4, 2), 'Entrance soffit over the front doors, and the narthex chapel', 'loft')
-SOF = {(x, z) for x in range(-10, 10) for z in range(ZN + 5, ZFI)}
-pack_area(m, SOF, 21, PLATES2D, prefer='x', colorfn=lambda x, z: WHITE)    # low white ceiling over the entrance
+for xp in (-7, 6):                                       # stone piers beside the front-door sidelights
+    for c2 in range(7):
+        lay_run(m, 'z', xp, ZFI - 3, [LBG] * 3, 3 * c2, BRICK1)
+SOF = {(x, z) for x in range(-7, 7) for z in range(ZFI - 3, ZFI)}
+pack_area(m, SOF, 21, PLATES2D, prefer='x', colorfn=lambda x, z: WHITE)    # low white ceiling just over the doors
 pack_area(m, SOF, 22, PLATES2D, prefer='z', colorfn=lambda x, z: WHITE)
-lay_run(m, 'x', ZN + 5, -10, [WHITE] * 20, 23, TILE1, hp=1)
-# chapel in the right wing: simple altar against the side wall, three short pews facing it
+lay_run(m, 'x', ZFI - 3, -7, [WHITE] * 14, 23, TILE1, hp=1)
+# chapel in the right wing: altar against the partition (entrance side), three short pews facing it
+CA = {(x, z) for x in (10, 11) for z in range(ZN + 6, ZN + 10)}
 for c2 in range(2):
-    pack_area(m, {(x, z) for x in (25, 26) for z in range(ZN + 3, ZN + 7)}, 3 * c2, BRICKS2D, prefer='z',
-              colorfn=lambda x, z: RB)
-m.place('15573', GOLD, 26, ZN + 4, 6, r=1)              # small brass cross on the chapel altar
-m.place('3005', GOLD, 26, ZN + 4.5, 7, check=False)
-m.place('3623', GOLD, 26, ZN + 3.5, 10, r=1, check=False)
-m.place('3005', GOLD, 26, ZN + 4.5, 11, check=False)
-pack_area(m, {(x, z) for x in (25, 26) for z in range(ZN + 3, ZN + 7) if m.free(x, z, 6)}, 6, TILES2D, prefer='z',
-          colorfn=lambda x, z: WHITE)
-for seat in (12, 15, 18):                                # pews face the altar (toward the right wall)
-    lay_run(m, 'z', seat, ZN + 2, [RB] * 7, 0, BRICK1)
-    for h in (0, 3): lay_run(m, 'z', seat - 1, ZN + 2, [RB] * 7, h, BRICK1)
-    lay_run(m, 'z', seat - 1, ZN + 2, [RB] * 7, 6, TILE1, hp=1)
+    pack_area(m, CA, 3 * c2, BRICKS2D, prefer='z', colorfn=lambda x, z: RB)
+m.place('15573', GOLD, 10, ZN + 7, 6, r=1)              # small brass cross on the chapel altar
+m.place('3005', GOLD, 10, ZN + 7.5, 7, check=False)
+m.place('3623', GOLD, 10, ZN + 6.5, 10, r=1, check=False)
+m.place('3005', GOLD, 10, ZN + 7.5, 11, check=False)
+pack_area(m, {c for c in CA if m.free(*c, 6)}, 6, TILES2D, prefer='z', colorfn=lambda x, z: WHITE)
+for seat, z0, n in ((14, ZN + 5, 6), (17, ZN + 5, 6), (20, ZN + 7, 4)):   # pews face the altar, clear of the rib post
+    lay_run(m, 'z', seat, z0, [RB] * n, 0, BRICK1)
+    for h in (0, 3): lay_run(m, 'z', seat + 1, z0, [RB] * n, h, BRICK1)
+    lay_run(m, 'z', seat + 1, z0, [RB] * n, 6, TILE1, hp=1)
 step((4, 3), 'Arcade beams', 'loft')
 for x0 in (20, -22):
     lay_run(m, 'z', ('beam', x0), ZRD, [None if z in RIBS else WHITE for z in range(ZRD, CW)], 27, BRICK2, width_axis_min=x0)   # chancel walls only
