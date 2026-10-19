@@ -1,25 +1,26 @@
 """St. Andrew's Episcopal, Newport News - minifig-scale nave, generated on a stud grid.
 
-Grid: x across (-30..30), z along (-58 rear .. 47 front), h in plates. Baseplates 64 x 128.
+Grid: x across (-30..30), z along (-58 rear .. 58 front), h in plates. Baseplates 64 x 128.
 Massing model -> studs at ~0.336 m/stud, 1 plate ~0.134 m.
 """
 import hashlib
 from core import *
 
 # ------------------------------------------------------------------ layout constants
-ZF, ZFI = 50, 49                             # front wall: outer / inner skin rows (half a bay beyond the last rib)
+ZF, ZFI = 58, 57                             # front wall: outer / inner skin rows (half a bay beyond the last rib)
 ZR, ZRI = -58, -57                           # rear wall: outer / inner skin rows
 ZRD = -56                                    # reredos lining
-RIBS = [-52, -40, -28, -16, -4, 8, 20, 32, 44]   # nine rib columns (1 stud thick), 12 studs apart
+RIBS = [-52 + 13 * i for i in range(9)]       # nine rib columns (1 stud thick), 13 studs apart
+CW = -24                                     # chancel front: end of the chancel side walls and aisle cross walls
 WIN = [r + 5 for r in RIBS[:-1]]             # one window pair centred in each bay
 POSTS_Z = RIBS
 MODULES = [(ZR - 1, RIBS[0])] + [(a, b) for a, b in zip(RIBS, RIBS[1:])] + [(RIBS[-1], ZF + 2)]
 MID_MODS = MODULES[2:-1]                     # identical lift-off modules
 CHAPEL = range(ZFI - 4, ZFI)                 # chapel door in the right wall near the front corner
-ZN = 38                                      # narthex screen wall, halfway between the last two ribs
+ZN = (RIBS[-2] + RIBS[-1]) // 2                                      # narthex screen wall, halfway between the last two ribs
 K = 41                                       # roof break (plates)
 def layer_h(k): return K + 3 * (k - 1)        # bottom of steep-roof layer k
-PEW_SEATS = [-20 + 3 * i for i in range(18)]
+PEW_SEATS = [-16 + 3 * i for i in range(19)]
 
 def mosaic(*key):
     hsh = int(hashlib.md5(repr(key).encode()).hexdigest(), 16) % 20
@@ -176,14 +177,14 @@ for x0 in (-32, 0):
         m.place('3811', LBG, x0, z0, 0)
 
 step((1, 1), 'Chancel platform: brick layer', 'base')
-plat = {(x, z) for x in range(-20, 20) for z in range(ZRD, -26) if z not in RIBS or abs(x + 0.5) < 20}
-amb = {(x, z) for s in (1, -1) for x in (range(22, 28) if s > 0 else range(-28, -22)) for z in range(ZRD, -30)}
+plat = {(x, z) for x in range(-20, 20) for z in range(ZRD, CW + 2) if z not in RIBS or abs(x + 0.5) < 20}
+amb = {(x, z) for s in (1, -1) for x in (range(22, 28) if s > 0 else range(-28, -22)) for z in range(ZRD, CW - 2)}
 pack_area(m, plat | amb, 0, BRICKS2D, prefer='x', colorfn=lambda x, z: LBG)
 step((1, 2), 'Chancel platform: plate layer', 'base')
 pack_area(m, plat | amb, 3, PLATES2D, prefer='z', colorfn=lambda x, z: LBG)
 step((1, 3), 'Chancel and ambulatory steps', 'base')
-steps_c = {(x, z) for x in range(-5, 5) for z in range(-26, -24)}
-steps_a = {(x, -29) for x in list(range(22, 28)) + list(range(-28, -22))}
+steps_c = {(x, z) for x in range(-5, 5) for z in range(CW + 2, CW + 4)}
+steps_a = {(x, CW - 1) for x in list(range(22, 28)) + list(range(-28, -22))}
 SLATE = lambda x, z: DBG if (x, z) in steps_c else LBG
 pack_area(m, steps_c | steps_a, 0, PLATES2D, prefer='x', colorfn=SLATE)
 pack_area(m, steps_c | steps_a, 1, PLATES2D, prefer='z', colorfn=SLATE)
@@ -202,11 +203,11 @@ for i, s in enumerate(PEW_SEATS):
 
 step((2, 2), 'Sanctuary floor: one step up at the altar rail', 'interior')
 SF = 6                                                 # sanctuary floor level, one step above the chancel
-SANCT = {(x, z) for x in range(-20, 20) for z in range(-55, -45)}
+SANCT = {(x, z) for x in range(-20, 20) for z in range(-55, -43)}
 pack_area(m, SANCT, 4, PLATES2D, prefer='x', colorfn=lambda x, z: DBG)
 pack_area(m, SANCT, 5, PLATES2D, prefer='z', colorfn=lambda x, z: DBG)
-lay_run(m, 'x', -45, -20, [DBG] * 40, 4, PLATE1, hp=1)                 # kneeling step in front of the rail
-lay_run(m, 'x', -45, -20, [DBG if x in (-1, 0) else DRED for x in range(-20, 20)], 5, TILE1, hp=1)   # red kneelers
+lay_run(m, 'x', -43, -18, [DBG] * 36, 4, PLATE1, hp=1)                 # kneeling step, stops short of the walls
+lay_run(m, 'x', -43, -18, [DBG if x in (-1, 0) else DRED for x in range(-18, 18)], 5, TILE1, hp=1)   # red kneelers
 
 step((2, 3), 'Sanctuary: three narrow white marble steps', 'interior')
 SANC1 = {(x, z) for x in range(-9, 9) for z in range(-55, -48)}       # lowest step
@@ -257,14 +258,14 @@ for h in (1, 4, 7): m.place('3004', BLUE, -16, -54, SF + h, r=0)
 m.place('3069b', GOLD, -16, -54, SF + 10, r=0)
 
 step((2, 6), 'Altar rail, wall to wall', 'interior')
-for xa, posts in ((-20, (-20, -14, -8, -2)), (1, (1, 7, 13, 19))):   # split in the middle, posts every 6 studs
-    for x in posts: m.place('3005', RB, x, -46, SF)
-    lay_run(m, 'x', -46, xa, [RB] * 19, SF + 3, PLATE1, hp=1)
-    lay_run(m, 'x', -46, xa, [RB] * 19, SF + 4, TILE1, hp=1)
+for xa, posts in ((-18, (-18, -12, -7, -2)), (1, (1, 6, 11, 17))):   # split in the middle, clear of the side walls
+    for x in posts: m.place('3005', RB, x, -44, SF)
+    lay_run(m, 'x', -44, xa, [RB] * 17, SF + 3, PLATE1, hp=1)
+    lay_run(m, 'x', -44, xa, [RB] * 17, SF + 4, TILE1, hp=1)
 pack_area(m, {c for c in SANCT if m.free(*c, SF)}, SF, TILES2D, prefer='x', colorfn=lambda x, z: DBG)   # slate sanctuary floor
 
 step((2, 4), 'Choir pews: three rows on the right, two on the left', 'interior')
-ZS = -38                                         # choir pews run z -38..-31, facing the centre aisle
+ZS = CW - 10                                     # choir pews run z -34..-27, facing the centre aisle
 for sd in (1, -1):
     X = (lambda x: x) if sd > 0 else (lambda x: -x - 1)
     for h in (4, 7):                             # fluted front along the centre aisle
@@ -287,12 +288,12 @@ for sd in (1, -1):
         for x, h in ((11, 6), (14, 8)):
             lay_run(m, 'z', x, ZS, [DBG] * 8, h, TILE1, hp=1)
 step((2, 9), 'Baptismal font', 'interior')
-for h in (0, 3): m.place('3003', RB, 11, -25, h)      # stepped wood pedestal in front of the chancel, by the pulpit
-m.place('3022', RB, 11, -25, 6)
-m.place('15573', RB, 11, -24, 7, r=0)                 # small cross on top
-m.place('3005', RB, 11.5, -24, 8, check=False)
-m.place('3623', RB, 10.5, -24, 11, r=0, check=False)
-m.place('3005', RB, 11.5, -24, 12, check=False)
+for h in (0, 3): m.place('3003', RB, 11, CW + 3, h)      # stepped wood pedestal in front of the chancel, by the pulpit
+m.place('3022', RB, 11, CW + 3, 6)
+m.place('15573', RB, 11, CW + 4, 7, r=0)                 # small cross on top
+m.place('3005', RB, 11.5, CW + 4, 8, check=False)
+m.place('3623', RB, 10.5, CW + 4, 11, r=0, check=False)
+m.place('3005', RB, 11.5, CW + 4, 12, check=False)
 
 step((2, 7), 'Fluted chancel front, lectern and pulpit', 'interior')
 FALL = lambda x: DRED if x in (6, 7, -8, -7) else RB
@@ -300,35 +301,35 @@ for sd in (1, -1):
     X = (lambda x: x) if sd > 0 else (lambda x: -x - 1)
     xa = min(X(9), X(19))
     for h in (4, 7):                                  # fluted parapet across the front of the choir
-        lay_run(m, 'x', -27, xa, [RB] * 11, h, {2: '2877', 1: '3005'})
-    lay_run(m, 'x', -27, xa, [RB] * 11, 10, TILE1, hp=1)
+        lay_run(m, 'x', CW + 1, xa, [RB] * 11, h, {2: '2877', 1: '3005'})
+    lay_run(m, 'x', CW + 1, xa, [RB] * 11, 10, TILE1, hp=1)
     # pulpit (right) and lectern (left) flank the chancel steps: fluted U, open at the back
     xs = [X(x) for x in range(5, 9)]; x0 = min(xs)
     for h in (4, 7, 10):
         cols = [FALL(x) if h >= 7 else RB for x in range(x0, x0 + 4)]
-        lay_run(m, 'x', -27, x0, cols, h, lambda col: {2: '2877', 1: '3005'} if col == RB else {2: '3004'})
+        lay_run(m, 'x', CW + 1, x0, cols, h, lambda col: {2: '2877', 1: '3005'} if col == RB else {2: '3004'})
         for x in (x0, x0 + 3):
-            lay_run(m, 'z', x, -30, [RB] * 3, h, BRICK1)
+            lay_run(m, 'z', x, CW - 2, [RB] * 3, h, BRICK1)
     for x in (x0, x0 + 3):                            # tiled side walls; the reading desk sits between them
-        lay_run(m, 'z', x, -30, [RB] * 4, 13, TILE1, hp=1)
-    m.place('3040b', RB, x0 + 1, -28, 13, r=FACE_R['-z']); m.place('3040b', RB, x0 + 2, -28, 13, r=FACE_R['-z'])
+        lay_run(m, 'z', x, CW - 2, [RB] * 4, 13, TILE1, hp=1)
+    m.place('3040b', RB, x0 + 1, CW, 13, r=FACE_R['-z']); m.place('3040b', RB, x0 + 2, CW, 13, r=FACE_R['-z'])
 
 step((2, 8), 'Organ console at the end of the left choir, and the grand piano', 'interior')
-org = {(x, z) for x in range(-18, -15) for z in range(-42, -38)}     # console faces across the chancel
+org = {(x, z) for x in range(-18, -15) for z in range(ZS, ZS + 4)}     # console faces across the chancel
 for c in range(2):
     pack_area(m, org, 4 + 3 * c, BRICKS2D, prefer='z' if c % 2 == 0 else 'x', colorfn=lambda x, z: RB)
-lay_run(m, 'z', -18, -42, [WHITE] * 4, 10, TILE1, hp=1)              # lower manual, nearest the bench
-lay_run(m, 'z', -17, -42, [BLACK] * 4, 10, TILE1, hp=1)              # upper manual
-lay_run(m, 'z', -16, -42, [RB] * 4, 10, BRICK1)                      # music desk and case
-lay_run(m, 'z', -16, -42, [RB] * 4, 13, TILE1, hp=1)
-for z0 in (-42, -39):                                                  # bench between the console and the wall
+lay_run(m, 'z', -18, ZS, [WHITE] * 4, 10, TILE1, hp=1)              # lower manual, nearest the bench
+lay_run(m, 'z', -17, ZS, [BLACK] * 4, 10, TILE1, hp=1)              # upper manual
+lay_run(m, 'z', -16, ZS, [RB] * 4, 10, BRICK1)                      # music desk and case
+lay_run(m, 'z', -16, ZS, [RB] * 4, 13, TILE1, hp=1)
+for z0 in (ZS, ZS + 3):                                                  # bench between the console and the wall
     m.place('3005', RB, -20, z0, 4)
-m.place('3710', RB, -20, -42, 7, r=1)
-for x0, z0 in ((-20, -34), (-17, -34), (-19, -31)):                    # piano legs
+m.place('3710', RB, -20, ZS, 7, r=1)
+for x0, z0 in ((-20, ZS + 4), (-17, ZS + 4), (-19, ZS + 7)):                    # piano legs
     m.place('3062b', BLACK, x0, z0, 4)
-m.place('3031', BLACK, -20, -34, 7)
+m.place('3031', BLACK, -20, ZS + 4, 7)
 for x0 in (-20, -18):
-    m.place('3068b', BLACK, x0, -34, 8); m.place('3068b', BLACK, x0, -32, 8)
+    m.place('3068b', BLACK, x0, ZS + 4, 8); m.place('3068b', BLACK, x0, ZS + 6, 8)
 
 # ================================================================== 3 walls, course by course
 for c in range(10):
@@ -346,14 +347,14 @@ for c in range(10):
     ring_course(c, 'right')
     step((3, c * 5 + 4), 'Course %d: posts and inner walls' % (c + 1), 'walls')
     for z in POSTS_Z:                                   # posts run up to the aisle ceiling (no beam in the nave)
-        if c < 9 or z >= -28:
+        if c < 9 or z >= CW:
             for x0 in (20, -22):
                 m.place('3004', RB, x0, z, h0, r=0)
     if c < 9:
-        SAC = range(-45, -41)                                  # doors through to the ambulatory hallways
+        SAC = range(-43, -39)                                  # doors through to the ambulatory hallways
         for x0 in (20, -22):                                   # chancel side walls (white, 2 wide)
             lay_run(m, 'z', ('chw', x0), ZRD, [None if (z in RIBS or (1 <= c <= 7 and z in SAC)) else WHITE
-                                               for z in range(ZRD, -28)], h0, BRICK2, width_axis_min=x0)
+                                               for z in range(ZRD, CW)], h0, BRICK2, width_axis_min=x0)
             if c == 1:
                 m.place('3020', WHITE, x0, SAC[0], 3, r=1)         # threshold up to the chancel floor
                 door(x0 + 1 if x0 > 0 else x0, SAC[0], h0=4, rf=1, color_door=WHITE)
@@ -367,8 +368,8 @@ for c in range(10):
             if c <= 5: return None if 23 <= lx < 27 else WHITE
             if c == 6 and 24 <= lx < 26: return GREEN
             return WHITE
-        if c == 0: door(23 if sd > 0 else -27, -28)
-        lay_run(m, 'x', -28, xs[0], [cw(x) for x in xs], h0, BRICK1)
+        if c == 0: door(23 if sd > 0 else -27, CW)
+        lay_run(m, 'x', CW, xs[0], [cw(x) for x in xs], h0, BRICK1)
     # narthex wall
     if c < 7:
         def nw(x):
@@ -386,7 +387,7 @@ for x0 in list(range(-20, 20, 4)) + [23, -27]:
     m.place('30055', RB, x0, ZN, 21, r=0)
 step((4, 2), 'Arcade beams', 'loft')
 for x0 in (20, -22):
-    lay_run(m, 'z', ('beam', x0), ZRD, [None if z in RIBS else WHITE for z in range(ZRD, -28)], 27, BRICK2, width_axis_min=x0)   # chancel walls only
+    lay_run(m, 'z', ('beam', x0), ZRD, [None if z in RIBS else WHITE for z in range(ZRD, CW)], 27, BRICK2, width_axis_min=x0)   # chancel walls only
 step((4, 3), 'Aisle ceilings (lower plate layer)', 'loft')
 def slab_cells():
     out = set()
@@ -394,7 +395,7 @@ def slab_cells():
         for xx in range(20, 32):
             x = xx if sd > 0 else -xx - 1
             # under the rib line only at the ribs (post caps) and over the chancel walls
-            zr = range(ZR, ZF + 1) if xx >= 22 else [z for z in range(ZRD, ZFI) if z in RIBS or z < -28]
+            zr = range(ZR, ZF + 1) if xx >= 22 else [z for z in range(ZRD, ZFI) if z in RIBS or z < CW]
             for z in zr: out.add((x, z))
     return out
 def slab_col(x, z):
