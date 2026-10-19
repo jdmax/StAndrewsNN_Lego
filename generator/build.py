@@ -201,9 +201,9 @@ for i, s in enumerate(PEW_SEATS):
     pew(s, 3, 19); pew(s, -19, -3)
 
 step((2, 3), 'Sanctuary: three white marble steps', 'interior')
-SANC1 = {(x, z) for x in range(-9, 9) for z in range(-55, -47)}       # broad lower step
-SANC2 = {(x, z) for x in range(-7, 7) for z in range(-55, -49)}       # middle step
-SANC3 = {(x, z) for x in range(-5, 5) for z in range(-55, -51)}       # altar footpace
+SANC1 = {(x, z) for x in range(-10, 10) for z in range(-55, -47)}       # broad lower step
+SANC2 = {(x, z) for x in range(-8, 8) for z in range(-55, -49)}       # middle step
+SANC3 = {(x, z) for x in range(-7, 7) for z in range(-55, -51)}       # altar footpace
 pack_area(m, SANC1, 4, PLATES2D, prefer='x', colorfn=lambda x, z: WHITE)
 pack_area(m, SANC2, 5, PLATES2D, prefer='z', colorfn=lambda x, z: WHITE)
 pack_area(m, SANC3, 6, PLATES2D, prefer='x', colorfn=lambda x, z: WHITE)
@@ -215,19 +215,21 @@ for c in range(2):                                    # wood altar with a white 
     pack_area(m, alt, HA + 3 * c, BRICKS2D, prefer='x' if c == 0 else 'z',
               colorfn=lambda x, z: WHITE if z == -52 else RB)
 pack_area(m, alt, HA + 6, TILES2D, prefer='x', colorfn=lambda x, z: WHITE)
-for h in (HA, HA + 3):                                # retable shelf behind the altar
-    lay_run(m, 'x', -55, -3, [RB] * 6, h, BRICK1)
-for x in (-3, -2, 1, 2):                              # altar candles
-    m.place('3062b', WHITE, x, -55, HA + 6)
-    m.place('6141', TYEL, x, -55, HA + 9)
+for h in (HA, HA + 3):                                # wide fluted wood gradine behind the altar
+    lay_run(m, 'x', -55, -7, [RB] * 14, h, {2: '2877'})
+for x in (-6, -4, -3, 2, 3, 5):                       # three candles each side of the cross
+    m.place('6141', GOLD, x, -55, HA + 6)
+    m.place('3062b', WHITE, x, -55, HA + 7)
+    m.place('6141', TYEL, x, -55, HA + 10)
 m.place('15573', RB, -1, -55, HA + 6, r=0)            # altar cross
 m.place('3005', RB, -0.5, -55, HA + 7, check=False)
 m.place('3623', RB, -1.5, -55, HA + 10, r=0, check=False)
 m.place('3005', RB, -0.5, -55, HA + 11, check=False)
-for x in (-5, 4):                                     # tall candles either side of the altar
+for x in (-6, 5):                                     # tall candles either side of the altar
     m.place('6141', GOLD, x, -52, HA)
     for h in (1, 4, 7): m.place('3062b', WHITE, x, -52, HA + h)
     m.place('6141', TYEL, x, -52, HA + 10)
+lay_run(m, 'x', -55, -7, [RB if m.free(x, -55, HA + 6) else None for x in range(-7, 7)], HA + 6, TILE1, hp=1)
 pack_area(m, {c for c in SANC3 if m.free(*c, HA)}, HA, TILES2D, prefer='x', colorfn=lambda x, z: WHITE)
 pack_area(m, {c for c in SANC2 - SANC3 if m.free(*c, 6)}, 6, TILES2D, prefer='x', colorfn=lambda x, z: WHITE)
 pack_area(m, {c for c in SANC1 - SANC2 if m.free(*c, 5)}, 5, TILES2D, prefer='x', colorfn=lambda x, z: WHITE)
@@ -276,6 +278,14 @@ for sd in (1, -1):
     if sd > 0:                                    # tile the exposed riser treads
         for x, h in ((11, 6), (14, 8)):
             lay_run(m, 'z', x, ZS, [DBG] * 8, h, TILE1, hp=1)
+step((2, 9), 'Baptismal font', 'interior')
+for h in (0, 3): m.place('3003', RB, 11, -25, h)      # stepped wood pedestal in front of the chancel, by the pulpit
+m.place('3022', RB, 11, -25, 6)
+m.place('15573', RB, 11, -24, 7, r=0)                 # small cross on top
+m.place('3005', RB, 11.5, -24, 8, check=False)
+m.place('3623', RB, 10.5, -24, 11, r=0, check=False)
+m.place('3005', RB, 11.5, -24, 12, check=False)
+
 step((2, 7), 'Fluted chancel front, lectern and pulpit', 'interior')
 FALL = lambda x: DRED if x in (6, 7, -8, -7) else RB
 for sd in (1, -1):
@@ -295,17 +305,17 @@ for sd in (1, -1):
         lay_run(m, 'z', x, -30, [RB] * 4, 13, TILE1, hp=1)
     m.place('3040b', RB, x0 + 1, -28, 13, r=FACE_R['-z']); m.place('3040b', RB, x0 + 2, -28, 13, r=FACE_R['-z'])
 
-step((2, 8), 'Organ console and grand piano behind the left choir pews', 'interior')
-org = {(x, z) for x in range(-20, -15) for z in range(-41, -37)}
+step((2, 8), 'Organ console at the end of the left choir, and the grand piano', 'interior')
+org = {(x, z) for x in range(-18, -15) for z in range(-42, -38)}     # console faces across the chancel
 for c in range(2):
-    pack_area(m, org, 4 + 3 * c, BRICKS2D, prefer='x' if c % 2 == 0 else 'z', colorfn=lambda x, z: RB)
-lay_run(m, 'x', -38, -20, [WHITE] * 5, 10, TILE1, hp=1)              # lower manual, nearest the bench
-lay_run(m, 'x', -39, -20, [BLACK] * 5, 10, TILE1, hp=1)              # upper manual
-for zr in (-40, -41):                                                 # music desk / case behind the keys
-    lay_run(m, 'x', zr, -20, [RB] * 5, 10, BRICK1)
-for x0 in (-19, -17):                                                  # bench
-    m.place('3005', RB, x0, -36, 4)
-m.place('3710', RB, -19, -36, 7, r=0)
+    pack_area(m, org, 4 + 3 * c, BRICKS2D, prefer='z' if c % 2 == 0 else 'x', colorfn=lambda x, z: RB)
+lay_run(m, 'z', -18, -42, [WHITE] * 4, 10, TILE1, hp=1)              # lower manual, nearest the bench
+lay_run(m, 'z', -17, -42, [BLACK] * 4, 10, TILE1, hp=1)              # upper manual
+lay_run(m, 'z', -16, -42, [RB] * 4, 10, BRICK1)                      # music desk and case
+lay_run(m, 'z', -16, -42, [RB] * 4, 13, TILE1, hp=1)
+for z0 in (-42, -39):                                                  # bench between the console and the wall
+    m.place('3005', RB, -20, z0, 4)
+m.place('3710', RB, -20, -42, 7, r=1)
 for x0, z0 in ((-20, -34), (-17, -34), (-19, -31)):                    # piano legs
     m.place('3062b', BLACK, x0, z0, 4)
 m.place('3031', BLACK, -20, -34, 7)
@@ -499,8 +509,8 @@ def module(z0, z1, name, order, organ=False, cross=False, mult=1, title=None, sp
     """split: left half stays as part of the fixed roof; the right half (+ centre, top course
     and ridge) is a lid that lifts straight off. Nothing fixed sits on top of the lid."""
     n = z1 - z0
-    def ic(z, k):
-        return BLACK if organ and 3 <= k <= 11 and z0 + 3 <= z < z1 - 3 else MN
+    def ic(z, k, sd=-1):
+        return BLACK if organ and sd < 0 and 3 <= k <= 11 and z0 + 3 <= z < z1 - 3 else MN   # grille on the left slope only
     def reg(k, sd):
         x0 = 22 - k if sd > 0 else -(24 - k)
         lay_run(m, 'z', ('roof', name, sd), z0, [DBG] * n, layer_h(k), SLOPE45,
@@ -508,7 +518,7 @@ def module(z0, z1, name, order, organ=False, cross=False, mult=1, title=None, sp
     def inv(k, sd):
         x0 = 20 - k if sd > 0 else -(22 - k)
         hook = split and not organ and sd < 0 and k in LANTERN_LAYERS
-        cols = [None if (sd < 0 and z in RIBS) or (hook and z == z0 + 6) else ic(z, k) for z in range(z0, z1)]
+        cols = [None if (sd < 0 and z in RIBS) or (hook and z == z0 + 6) else ic(z, k, sd) for z in range(z0, z1)]
         if hook:     # a plain brick here gives the ceiling a flat spot with an anti-stud to hang a lantern from
             m.place('3004', MN, k - 22, z0 + 6, layer_h(k), r=0)
         lay_run(m, 'z', ('roof', name, sd), z0, cols, layer_h(k), INV45,
